@@ -39,7 +39,7 @@
         type="button"
         value="Cancel"
         id="Cancel"
-        onclick="cancel('<%= index %>', '<%= alert.tabId %>')"
+        onclick="cancel('<%= index%>','<%=alert.tabId%>')"
       />
     </div>
   </form>
@@ -52,7 +52,8 @@
       console.log("hello");
       console.log(tabId);
       const response = await axios.post(
-        `https://polling-server.onrender.com/confirm/${tabId}`,
+        // `https://polling-server.onrender.com/confirm/${tabId}`,
+        `http://localhost:8080/confirm/${tabId}`,
         {
           Action: action,
           index: index,
@@ -76,6 +77,7 @@
   };
 
   const cancel = (index, tabId) => {
+    console.log("cancel");
     sendAction("cancel", index, tabId);
   };
 </script>

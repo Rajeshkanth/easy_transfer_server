@@ -13,8 +13,6 @@ app.use(
 
 const receivedPaymentAlerts = [];
 const confirmationstatus = {};
-let confirmed = false;
-let canceled = false;
 
 app.use(bodyParser.json());
 
@@ -34,13 +32,16 @@ app.post("/confirm/:tabId", (req, res) => {
   const action = req.body.Action;
   //   console.log(status);
   if (action === "confirm") {
-    confirmed = true;
+    // confirmed = true;
     confirmationstatus[tabId] = "confirm";
     console.log("confirmed");
     receivedPaymentAlerts.splice(req.body.index, 1);
     res.status(200).send();
-  } else {
-    canceled = true;
+  } else if (action === "cancel") {
+    // canceled = true;
+    confirmationstatus[tabId] = "cancel";
+    console.log("canceled");
+    receivedPaymentAlerts.splice(req.body.index, 1);
     res.status(201).send();
   }
 });
@@ -48,18 +49,14 @@ app.post("/success/:tabId", (req, res) => {
   const tabId = req.params.tabId;
   console.log("/success :", tabId);
   if (confirmationstatus[tabId] === "confirm") {
-    confirmed = false;
+    // confirmed = false;
     delete confirmationstatus[tabId];
     res.status(200).send("confirmed");
+  } else if (confirmationstatus[tabId] === "cancel") {
+    delete confirmationstatus[tabId];
+    res.status(201).send();
   }
 });
-
-// app.post("/success", (req, res) => {
-//   if (confirmed) {
-//     confirmed = false;
-//     res.status(200).send("confirmed");
-//   }
-// });
 
 app.get("/paid", (req, res) => {
   res.render("paid");
