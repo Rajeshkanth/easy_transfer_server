@@ -41,6 +41,7 @@ app.post("/confirm/:tabId", (req, res) => {
     res.status(200).send();
   } else {
     canceled = true;
+    res.status(201).send();
   }
 });
 app.post("/success/:tabId", (req, res) => {
