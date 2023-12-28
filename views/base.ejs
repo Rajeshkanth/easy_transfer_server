@@ -1,0 +1,81 @@
+<%-include("header")-%>
+
+<div class="header">
+  <h1>Payment alerts</h1>
+</div>
+<div class="form-container">
+  <% AlertValue.forEach((alert, index) =>{ %>
+  <form key="<%= index %>" class="form">
+    <div class="inp-container">
+      <input
+        id="accNum-<%= index %>"
+        type="text"
+        value="Account Number : <%= alert.AccNum %>"
+        readonly
+      />
+      <input
+        id="amount-<%= index %>"
+        type="text"
+        value="Amount : <%= alert.Amount %>"
+        readonly
+      />
+      <input
+        id="accHolder-<%= index %>"
+        type="text"
+        value="Holder Name : <%= alert.AccHolder %>"
+        readonly
+      />
+    </div>
+
+    <div class="btns">
+      <input
+        type="button"
+        value="Confirm"
+        id="Confirm"
+        onclick="confirm('<%= index%>','<%=alert.tabId%>')"
+      />
+
+      <input
+        type="button"
+        value="Cancel"
+        id="cancel"
+        onclick="cancel('<%= index %>', '<%= alert.tabId %>')"
+      />
+    </div>
+  </form>
+  <% }); %>
+</div>
+
+<script>
+  const sendAction = async (action, index, tabId) => {
+    try {
+      console.log("hello");
+      console.log(tabId);
+      const response = await axios.post(
+        `http://localhost:8080/confirm/${tabId}`,
+        {
+          Action: action,
+          index: index,
+          tabId: tabId,
+        }
+      );
+
+      if (response.status === 200) {
+        window.location.href = "/paid";
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const confirm = (index, tabId) => {
+    console.log(tabId);
+    sendAction("confirm", index, tabId);
+  };
+
+  const cancel = (index, tabId) => {
+    sendAction("cancel", index, tabId);
+  };
+</script>
+
+<%-include("footer")-%>

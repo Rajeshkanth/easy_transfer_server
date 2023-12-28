@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Alert</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+      }
+      body {
+        margin: 0;
+        background-color: #fff;
+
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+          "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      code {
+        font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+          monospace;
+      }
+      .form-container {
+        background-color: #fff;
+        padding: 1px;
+        height: auto;
+
+        margin-left: 10rem;
+        margin-top: 10vh;
+      }
+      .form {
+        background-color: #ffffff;
+        border: 2px solid rgb(199, 193, 193);
+        width: 30%;
+        height: auto;
+        padding: 1rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0 25px 25px 25px;
+        margin: 1rem;
+      }
+      .form input {
+        width: 80%;
+        margin: 0.4rem;
+        font-size: 18px;
+        outline: 0;
+        border-radius: 25px;
+        border: 2px solid #c2baba;
+        padding: 0.4rem;
+        box-sizing: border-box;
+      }
+
+      #Confirm {
+        background-color: rgb(168, 222, 61);
+        width: 9vw;
+        border: 2px solid rgb(168, 222, 61);
+      }
+      #Confirm:hover {
+        background-color: #80ca48;
+        cursor: pointer;
+      }
+      #cancel {
+        background-color: rgb(233, 35, 35);
+        width: 9vw;
+        border: 2px solid rgb(233, 35, 35);
+        color: #fff;
+      }
+
+      #cancel:hover {
+        background-color: rgb(221, 15, 15);
+        cursor: pointer;
+      }
+
+      .header {
+        height: 8vh;
+        position: fixed;
+        width: 100vw;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        background-color: #dee0de;
+        padding-left: 2rem;
+        top: 0;
+      }
+
+      @media all and (max-width: 600px) {
+        .form-container {
+          margin-left: 2rem;
+        }
+        .form {
+          /* width: 60vw; */
+          width: auto;
+          height: auto;
+        }
+        .form input {
+          width: 90%;
+          font-size: 14px;
+          background-color: transparent;
+          border: 1px solid;
+          /* border-bottom: 2px solid; */
+        }
+        .form label {
+          text-align: left;
+        }
+        .form #accHolder {
+          width: 90%;
+        }
+        .btns {
+          width: 100%;
+          display: flex;
+        }
+        #Confirm {
+          width: 43%;
+        }
+        #cancel {
+          width: 43%;
+        }
+      }
+    </style>
+  </head>
+  <body></body>
+</html>
