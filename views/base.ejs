@@ -38,7 +38,7 @@
       <input
         type="button"
         value="Cancel"
-        id="cancel"
+        id="Cancel"
         onclick="cancel('<%= index %>', '<%= alert.tabId %>')"
       />
     </div>
@@ -62,6 +62,8 @@
 
       if (response.status === 200) {
         window.location.href = "/paid";
+      } else {
+        window.location.href = "/canceled";
       }
     } catch (err) {
       console.log(err);
