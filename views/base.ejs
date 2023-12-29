@@ -4,7 +4,10 @@
   <h1 style="margin: 0">Transaction Alerts</h1>
 </div>
 
-<div class="form-container">
+<div
+  class="form-container"
+  style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
+>
   <% AlertValue.forEach((alert, index) =>{ %>
 
   <div
@@ -72,43 +75,7 @@
       </button>
     </div>
   </div>
-  <!-- <form key="<%= index %>" class="form">
 
-
-
-    
-    <div class="inp-container">
-      <strong>Payment to <%= alert.AccHolder %></strong>
-      <input
-        id="accNum-<%= index %>"
-        type="text"
-        value="Account Number : <%= alert.AccNum %>"
-        readonly
-      />
-      <input
-        id="amount-<%= index %>"
-        type="text"
-        value="Amount : <%= alert.Amount %>"
-        readonly
-      />
-    </div>
-
-    <div class="btns">
-      <input
-        type="button"
-        value="Confirm"
-        id="Confirm"
-        onclick="confirm('<%= index%>','<%=alert.tabId%>')"
-      />
-
-      <input
-        type="button"
-        value="Cancel"
-        id="Cancel"
-        onclick="cancel('<%= index%>','<%=alert.tabId%>')"
-      />
-    </div>
-  </form> -->
   <% }); %>
 </div>
 
