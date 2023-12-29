@@ -3,7 +3,8 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { log } = require("console");
+var livereload = require("livereload");
+var connectLiveReload = require("connect-livereload");
 
 app.use(
   cors({

@@ -10,6 +10,7 @@
     <style>
       body {
         margin: 0;
+        font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
       }
       body {
         margin: 0;
@@ -43,7 +44,7 @@
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        border-radius: 0 25px 25px 25px;
+        border-radius: 25px;
         margin: 1rem;
       }
       .form input {
@@ -79,15 +80,19 @@
       }
 
       .header {
-        height: 8vh;
+        height: 10vh;
         position: fixed;
         width: 100vw;
         text-align: left;
         display: flex;
         align-items: center;
-        background-color: #dee0de;
-        padding-left: 2rem;
+        background-color: #ffb703;
+        border-bottom: 2px solid;
+        border-bottom-left-radius: 15px;
+        padding-left: 2.2rem;
         top: 0;
+        font-size: 12px;
+        color: black;
       }
 
       @media all and (max-width: 600px) {

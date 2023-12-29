@@ -1,12 +1,92 @@
 <%-include("header")-%>
 
 <div class="header">
-  <h1>Payment alerts</h1>
+  <h1 style="margin: 0">Transaction Alerts</h1>
 </div>
+
 <div class="form-container">
   <% AlertValue.forEach((alert, index) =>{ %>
-  <form key="<%= index %>" class="form">
+  <div
+    key="<%=index%>"
+    style="
+      background-color: rgb(250, 250, 250);
+      height: auto;
+      padding: 1px;
+      margin-top: 10vh;
+    "
+  >
+    <div
+      style="
+        margin: 2rem;
+        padding: 2rem;
+        /* margin-top: 15vh; */
+        display: flex;
+        flex-direction: column;
+        border: 1px solid thistle;
+        border-bottom: 10px double rgb(33, 33, 212);
+        border-radius: 15px;
+        /* border-top-left-radius: 0px; */
+        background-color: white;
+      "
+    >
+      <h1 style="margin: 4px">₹ <%=alert.Amount%></h1>
+      <strong style="margin: 4px">payment to <%=alert.AccHolder %></strong>
+
+      <div style="display: flex">
+        <button
+          style="
+            margin: 2rem 0;
+            margin-bottom: 0.4rem;
+            padding: 0.4rem 0.4rem;
+            width: 50%;
+            background-color: rgb(66, 209, 145);
+            border-radius: 3px;
+            /* border: 1px solid rgb(1, 0, 0); */
+            border: 2px solid;
+            outline: 0;
+            box-sizing: border-box;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            outline: 1px solid black;
+          "
+          onclick="confirm( ' <%=index%>','<%=alert.tabId%>')"
+        >
+          confirm
+        </button>
+
+        <button
+          style="
+            margin: 2rem 1rem;
+            margin-bottom: 0.4rem;
+            padding: 0.4rem 0.4rem;
+            width: 50%;
+            /* background-color: rgb(234, 243, 244); */
+            background-color: rgb(230, 71, 71);
+            border-radius: 3px;
+            border: 2px solid rgb(253, 253, 253);
+            color: white;
+            /* font: 17px bold; */
+            font-size: 17px;
+            font-weight: bold;
+            /* border: 0; */
+            outline: 1px solid black;
+            box-sizing: border-box;
+          "
+          onclick="('<%=index%>','<%=alert.tabId%>')"
+        >
+          cancel
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- <form key="<%= index %>" class="form">
+
+
+
+    
     <div class="inp-container">
+      <strong>Payment to <%= alert.AccHolder %></strong>
       <input
         id="accNum-<%= index %>"
         type="text"
@@ -17,12 +97,6 @@
         id="amount-<%= index %>"
         type="text"
         value="Amount : <%= alert.Amount %>"
-        readonly
-      />
-      <input
-        id="accHolder-<%= index %>"
-        type="text"
-        value="Holder Name : <%= alert.AccHolder %>"
         readonly
       />
     </div>
@@ -42,7 +116,7 @@
         onclick="cancel('<%= index%>','<%=alert.tabId%>')"
       />
     </div>
-  </form>
+  </form> -->
   <% }); %>
 </div>
 
