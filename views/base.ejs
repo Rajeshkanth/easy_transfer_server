@@ -176,7 +176,7 @@
 
   socket.on("paymentConfirmAlert", (data) => {
     console.log(data);
-    alertsData.push(data.newReceiver);
+    alertsData.push(data.receivedValue);
     function createAlertElements() {
       const container = document.querySelector(".form-container");
 
