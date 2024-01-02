@@ -9,7 +9,7 @@
   style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
 >
   <% AlertValue.forEach((alert, index) =>{ %>
-
+  <!-- 
   <div
     key="<%=index%>"
     style="
@@ -74,6 +74,61 @@
         cancel
       </button>
     </div>
+  </div> -->
+
+  <div key="<%=index%>" style="margin: 10px; border-bottom: 1px solid gray">
+    <h5 style="margin-left: 2rem; margin: 0; margin-bottom: 0.4rem">
+      Transfer Details
+    </h5>
+    <div style="display: flex; justify-content: space-between">
+      <h5 style="margin: 0.4rem; margin-top: 10px; color: grey">Recipient</h5>
+      <h4 style="margin: 0.4rem; margin-top: 10px"><%=alert.AccHolder%></h4>
+    </div>
+    <div style="display: flex; justify-content: space-between">
+      <h5 style="margin: 0.4rem; color: grey">Account Number</h5>
+      <h4 style="margin: 0.4rem"><%=alert.AccNum%></h4>
+    </div>
+    <div style="display: flex; justify-content: space-between">
+      <h5 style="margin: 0.4rem; color: grey">IFSC Code</h5>
+      <h4 style="margin: 0.4rem"><%=alert.Ifsc%></h4>
+    </div>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: center;
+      "
+    >
+      <h5
+        style="text-align: center; margin: 0; margin-left: 0.4rem; color: grey"
+      >
+        Sending Amount
+      </h5>
+      <br />
+      <h1 style="margin: 0"><%=alert.Amount%></h1>
+    </div>
+  </div>
+
+  <div
+    style="
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 2px solid grey;
+    "
+  >
+    <button
+      class="button-17"
+      onclick="confirm( ' <%=index%>','<%=alert.tabId%>')"
+    >
+      Confirm
+    </button>
+    <button
+      class="button-17"
+      onclick="cancel( ' <%=index%>','<%=alert.tabId%>')"
+    >
+      Cancel
+    </button>
   </div>
 
   <% }); %>
