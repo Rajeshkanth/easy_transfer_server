@@ -173,9 +173,11 @@
 
   const socket = io.connect("https://polling-server.onrender.com");
   const alertsData = [];
+  let socketRoom;
 
   socket.on("paymentConfirmAlert", (data) => {
     console.log(data);
+    socketRoom = data.socketRoom;
     alertsData.push(data.receivedValue);
     function createAlertElements() {
       const container = document.querySelector(".form-container");
