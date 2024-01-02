@@ -103,7 +103,7 @@ io.on("connection", (socket) => {
     let socketId;
     const room = data.NewReceiver.tabId;
     console.log(data.NewReceiver);
-    receivedPaymentAlerts.push(data.NewReceiver);
+    // receivedPaymentAlerts.push(data.NewReceiver);
     socketRooms.set(socket.id, room);
     for (const [key, value] of socketRooms.entries()) {
       if (value === room) {
