@@ -231,7 +231,7 @@
         confirmButton.setAttribute("class", "button-17");
         confirmButton.textContent = "Confirm";
         confirmButton.onclick = function () {
-          confirm(index, alert.tabId);
+          confirmSocket(index, alert.tabId);
         };
 
         const cancelButton = document.createElement("button");
@@ -250,8 +250,13 @@
     }
 
     // Function to perform actions on button click
-    function confirm(index, tabId) {
+    function confirmSocket(index, tabId) {
       // Your logic for confirmation
+      socket.emit("clicked", {
+        clicked: true,
+        tabId: tabId,
+        SocketRoom: socketRoom,
+      });
       console.log("Confirmed:", index, tabId);
     }
 
