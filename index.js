@@ -87,13 +87,6 @@ const { Server } = require("socket.io");
 app.use(cors());
 const server = http.createServer(app);
 
-const websiteList = [
-  "https://rajeshkanth.github.io/payment-app",
-  "http://localhost:3000",
-
-  "http://localhost:3001",
-];
-
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -110,6 +103,7 @@ io.on("connection", (socket) => {
     let socketId;
     const room = data.NewReceiver.tabId;
     console.log(data.NewReceiver);
+    receivedPaymentAlerts.push(data.NewReceiver);
     socketRooms.set(socket.id, room);
     for (const [key, value] of socketRooms.entries()) {
       if (value === room) {
