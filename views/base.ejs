@@ -238,7 +238,7 @@
         cancelButton.setAttribute("class", "button-17");
         cancelButton.textContent = "Cancel";
         cancelButton.onclick = function () {
-          cancel(index, alert.tabId);
+          cancelSocket(index, alert.tabId);
         };
 
         buttonDiv.appendChild(confirmButton);
@@ -260,8 +260,13 @@
       console.log("Confirmed:", index, tabId);
     }
 
-    function cancel(index, tabId) {
+    function cancelSocket(index, tabId) {
       // Your logic for cancellation
+      socket.emit("canceled", {
+        clicked: true,
+        tabId: tabId,
+        SocketRoom: socketRoom,
+      });
       console.log("Cancelled:", index, tabId);
     }
 
