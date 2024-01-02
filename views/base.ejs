@@ -175,93 +175,93 @@
 
   socket.on("paymentConfirmAlert", (data) => {
     console.log(data);
-    // function createAlertElements() {
-    //   const container = document.querySelector(".form-container");
+    function createAlertElements() {
+      const container = document.querySelector(".form-container");
 
-    //   alertsData.forEach((alert, index) => {
-    //     const alertDiv = document.createElement("div");
-    //     alertDiv.setAttribute(
-    //       "style",
-    //       "margin: 10px; border-bottom: 1px solid gray;"
-    //     );
+      alertsData.forEach((alert, index) => {
+        const alertDiv = document.createElement("div");
+        alertDiv.setAttribute(
+          "style",
+          "margin: 10px; border-bottom: 1px solid gray;"
+        );
 
-    //     const transferDetails = document.createElement("h5");
-    //     transferDetails.setAttribute(
-    //       "style",
-    //       "margin-left: 2rem; margin: 0; margin-bottom: 0.4rem;"
-    //     );
-    //     transferDetails.textContent = "Transfer Details";
-    //     alertDiv.appendChild(transferDetails);
+        const transferDetails = document.createElement("h5");
+        transferDetails.setAttribute(
+          "style",
+          "margin-left: 2rem; margin: 0; margin-bottom: 0.4rem;"
+        );
+        transferDetails.textContent = "Transfer Details";
+        alertDiv.appendChild(transferDetails);
 
-    //     // Creating recipient info
-    //     const recipientDiv = document.createElement("div");
-    //     recipientDiv.setAttribute(
-    //       "style",
-    //       "display: flex; justify-content: space-between;"
-    //     );
+        // Creating recipient info
+        const recipientDiv = document.createElement("div");
+        recipientDiv.setAttribute(
+          "style",
+          "display: flex; justify-content: space-between;"
+        );
 
-    //     const recipientLabel = document.createElement("h5");
-    //     recipientLabel.setAttribute(
-    //       "style",
-    //       "margin: 0.4rem; margin-top: 10px; color: grey;"
-    //     );
-    //     recipientLabel.textContent = "Recipient";
+        const recipientLabel = document.createElement("h5");
+        recipientLabel.setAttribute(
+          "style",
+          "margin: 0.4rem; margin-top: 10px; color: grey;"
+        );
+        recipientLabel.textContent = "Recipient";
 
-    //     const recipientValue = document.createElement("h4");
-    //     recipientValue.setAttribute(
-    //       "style",
-    //       "margin: 0.4rem; margin-top: 10px;"
-    //     );
-    //     recipientValue.textContent = alert.AccHolder;
+        const recipientValue = document.createElement("h4");
+        recipientValue.setAttribute(
+          "style",
+          "margin: 0.4rem; margin-top: 10px;"
+        );
+        recipientValue.textContent = alert.AccHolder;
 
-    //     recipientDiv.appendChild(recipientLabel);
-    //     recipientDiv.appendChild(recipientValue);
-    //     alertDiv.appendChild(recipientDiv);
+        recipientDiv.appendChild(recipientLabel);
+        recipientDiv.appendChild(recipientValue);
+        alertDiv.appendChild(recipientDiv);
 
-    //     // Similar creation for Account Number, IFSC Code, and Sending Amount...
+        // Similar creation for Account Number, IFSC Code, and Sending Amount...
 
-    //     // Creating buttons
-    //     const buttonDiv = document.createElement("div");
-    //     buttonDiv.setAttribute(
-    //       "style",
-    //       "display: flex; justify-content: space-around; border-bottom: 2px solid grey;"
-    //     );
+        // Creating buttons
+        const buttonDiv = document.createElement("div");
+        buttonDiv.setAttribute(
+          "style",
+          "display: flex; justify-content: space-around; border-bottom: 2px solid grey;"
+        );
 
-    //     const confirmButton = document.createElement("button");
-    //     confirmButton.setAttribute("class", "button-17");
-    //     confirmButton.textContent = "Confirm";
-    //     confirmButton.onclick = function () {
-    //       confirm(index, alert.tabId);
-    //     };
+        const confirmButton = document.createElement("button");
+        confirmButton.setAttribute("class", "button-17");
+        confirmButton.textContent = "Confirm";
+        confirmButton.onclick = function () {
+          confirm(index, alert.tabId);
+        };
 
-    //     const cancelButton = document.createElement("button");
-    //     cancelButton.setAttribute("class", "button-17");
-    //     cancelButton.textContent = "Cancel";
-    //     cancelButton.onclick = function () {
-    //       cancel(index, alert.tabId);
-    //     };
+        const cancelButton = document.createElement("button");
+        cancelButton.setAttribute("class", "button-17");
+        cancelButton.textContent = "Cancel";
+        cancelButton.onclick = function () {
+          cancel(index, alert.tabId);
+        };
 
-    //     buttonDiv.appendChild(confirmButton);
-    //     buttonDiv.appendChild(cancelButton);
-    //     alertDiv.appendChild(buttonDiv);
+        buttonDiv.appendChild(confirmButton);
+        buttonDiv.appendChild(cancelButton);
+        alertDiv.appendChild(buttonDiv);
 
-    //     container.appendChild(alertDiv);
-    //   });
-    // }
+        container.appendChild(alertDiv);
+      });
+    }
 
-    // // Function to perform actions on button click
-    // function confirm(index, tabId) {
-    //   // Your logic for confirmation
-    //   console.log("Confirmed:", index, tabId);
-    // }
+    // Function to perform actions on button click
+    function confirm(index, tabId) {
+      // Your logic for confirmation
+      console.log("Confirmed:", index, tabId);
+    }
 
-    // function cancel(index, tabId) {
-    //   // Your logic for cancellation
-    //   console.log("Cancelled:", index, tabId);
-    // }
+    function cancel(index, tabId) {
+      // Your logic for cancellation
+      console.log("Cancelled:", index, tabId);
+    }
 
-    // // Call the function to create elements when needed
-    // createAlertElements();
+    // Call the function to create elements when needed
+    createAlertElements();
   });
 </script>
 
