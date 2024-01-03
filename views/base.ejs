@@ -110,14 +110,13 @@
   let socketRoom;
 
   const confirmViaSocket = (index, tabId) => {
-    if (alertValue.length > 0) {
-      socket.emit("clicked", {
-        clicked: true,
-        tabId: tabId,
-        SocketRoom: socketRoom,
-      });
-      window.location.href("/paid");
-    }
+    socket.emit("clicked", {
+      clicked: true,
+      tabId: tabId,
+      SocketRoom: socketRoom,
+    });
+    window.location.href("/paid");
+
     handleReset(index);
   };
 
