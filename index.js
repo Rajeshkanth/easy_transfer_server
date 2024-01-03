@@ -51,13 +51,15 @@ app.post("/confirm/:tabId", (req, res) => {
 });
 app.post("/success/:tabId", (req, res) => {
   const tabId = req.params.tabId;
-  console.log("/success :", tabId);
+
   if (confirmationstatus[tabId] === "confirm") {
     // confirmed = false;
     delete confirmationstatus[tabId];
+    console.log("/success :", tabId);
     res.status(200).send("confirmed");
   } else if (confirmationstatus[tabId] === "cancel") {
     delete confirmationstatus[tabId];
+    console.log("canceled :", tabId);
     res.status(201).send();
   }
 });
@@ -114,13 +116,6 @@ io.on("connection", (socket) => {
       }
     }
     socket.join(room);
-    if (data.connected) {
-      io.emit("paymentConfirmAlert", {
-        receivedValue: data.NewReceiver,
-        UniqueId: room,
-        socketRoom: socketId,
-      });
-    }
   });
 
   socket.on("join_success_room", (data) => {
@@ -130,9 +125,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("clicked", (data) => {
-    const roomName = data.SocketRoom;
     console.log("tab id", data.tabId);
-    console.log(`payment confirmed ${roomName}`);
+    console.log(`payment confirmed by socket to ${data.tabId}`);
     const itemIndex = receivedPaymentAlerts.findIndex(
       (item) => item.tabId === data.tabId
     );
@@ -147,6 +141,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("canceled", (data) => {
+    console.log(`payment canceled by socket ${data.tabId}`);
     const itemIndex = receivedPaymentAlerts.findIndex(
       (item) => item.tabId === data.tabId
     );
