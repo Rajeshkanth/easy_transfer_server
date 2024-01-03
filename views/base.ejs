@@ -53,13 +53,13 @@
   >
     <button
       class="button-17"
-      onclick="<%= alert.type === 'socket' ? 'confirmViaSocket(\'' + index + '\', \'' + alert.tabId + '\')' : 'confirm(\'' + index + '\', \'' + alert.tabId + '\')' %>"
+      onclick="<%= alert.type === 'socket' ? 'confirmViaSocket(\'' + index + '\', \'' + alert.tabId + '\',\''+alert.socketRoom + '\')' : 'confirm(\'' + index + '\', \'' + alert.tabId + '\')' %>"
     >
       Confirm
     </button>
     <button
       class="button-17"
-      onclick="<%= alert.type === 'socket' ? 'cancelViaSocket(\'' + index + '\', \'' + alert.tabId + '\')' : 'cancel(\'' + index + '\', \'' + alert.tabId + '\')' %>"
+      onclick="<%= alert.type === 'socket' ? 'cancelViaSocket(\'' + index + '\', \'' + alert.tabId + '\',\''+alert.socketRoom + '\')' : 'cancel(\'' + index + '\', \'' + alert.tabId + '\')' %>"
     >
       Cancel
     </button>
@@ -109,7 +109,7 @@
   const alertsData = [];
   let socketRoom;
 
-  const confirmViaSocket = (index, tabId) => {
+  const confirmViaSocket = (index, tabId, socketRoom) => {
     socket.emit("clicked", {
       clicked: true,
       tabId: tabId,
