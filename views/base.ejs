@@ -119,10 +119,11 @@
   >
     <button
       class="button-17"
-      onclick="confirm( ' <%=index%>','<%=alert.tabId%>')"
+      onclick="<%= (alert.type === 'socket' ? `confirmViaSocket('<%=index%>' ','<%=alert.tabId%>')` : `confirm('<%=index%>','<%=alert.tabId%>')`) %>"
     >
       Confirm
     </button>
+
     <button
       class="button-17"
       onclick="cancel( ' <%=index%>','<%=alert.tabId%>')"
@@ -175,108 +176,121 @@
   const alertsData = [];
   let socketRoom;
 
-  socket.on("paymentConfirmAlert", (data) => {
-    console.log(data);
-    socketRoom = data.socketRoom;
-    alertsData.push(data.receivedValue);
-    function createAlertElements() {
-      const container = document.querySelector(".form-container");
+  const confirmViaSocket = (index, tabId) => {
+    socket.emit("clicked", {
+      clicked: true,
+      tabId: tabId,
+      SocketRoom: socketRoom,
+    });
+    window.location.href = "/paid";
 
-      alertsData.forEach((alert, index) => {
-        const alertDiv = document.createElement("div");
-        alertDiv.setAttribute(
-          "style",
-          "margin: 10px; border-bottom: 1px solid gray;"
-        );
+    handleReset(index);
+  };
 
-        const transferDetails = document.createElement("h5");
-        transferDetails.setAttribute(
-          "style",
-          "margin-left: 2rem; margin: 0; margin-bottom: 0.4rem;"
-        );
-        transferDetails.textContent = "Transfer Details";
-        alertDiv.appendChild(transferDetails);
+  // socket.on("paymentConfirmAlert", (data) => {
+  //   console.log(data);
+  //   socketRoom = data.socketRoom;
+  //   alertsData.push(data.receivedValue);
+  //   function createAlertElements() {
+  //     const container = document.querySelector(".form-container");
 
-        // Creating recipient info
-        const recipientDiv = document.createElement("div");
-        recipientDiv.setAttribute(
-          "style",
-          "display: flex; justify-content: space-between;"
-        );
+  //     alertsData.forEach((alert, index) => {
+  //       const alertDiv = document.createElement("div");
+  //       alertDiv.setAttribute(
+  //         "style",
+  //         "margin: 10px; border-bottom: 1px solid gray;"
+  //       );
 
-        const recipientLabel = document.createElement("h5");
-        recipientLabel.setAttribute(
-          "style",
-          "margin: 0.4rem; margin-top: 10px; color: grey;"
-        );
-        recipientLabel.textContent = "Recipient";
+  //       const transferDetails = document.createElement("h5");
+  //       transferDetails.setAttribute(
+  //         "style",
+  //         "margin-left: 2rem; margin: 0; margin-bottom: 0.4rem;"
+  //       );
+  //       transferDetails.textContent = "Transfer Details";
+  //       alertDiv.appendChild(transferDetails);
 
-        const recipientValue = document.createElement("h4");
-        recipientValue.setAttribute(
-          "style",
-          "margin: 0.4rem; margin-top: 10px;"
-        );
-        recipientValue.textContent = alert.AccHolder;
+  //       // Creating recipient info
+  //       const recipientDiv = document.createElement("div");
+  //       recipientDiv.setAttribute(
+  //         "style",
+  //         "display: flex; justify-content: space-between;"
+  //       );
 
-        recipientDiv.appendChild(recipientLabel);
-        recipientDiv.appendChild(recipientValue);
-        alertDiv.appendChild(recipientDiv);
+  //       const recipientLabel = document.createElement("h5");
+  //       recipientLabel.setAttribute(
+  //         "style",
+  //         "margin: 0.4rem; margin-top: 10px; color: grey;"
+  //       );
+  //       recipientLabel.textContent = "Recipient";
 
-        // Similar creation for Account Number, IFSC Code, and Sending Amount...
+  //       const recipientValue = document.createElement("h4");
+  //       recipientValue.setAttribute(
+  //         "style",
+  //         "margin: 0.4rem; margin-top: 10px;"
+  //       );
+  //       recipientValue.textContent = alert.AccHolder;
 
-        // Creating buttons
-        const buttonDiv = document.createElement("div");
-        buttonDiv.setAttribute(
-          "style",
-          "display: flex; justify-content: space-around; border-bottom: 2px solid grey;"
-        );
+  //       recipientDiv.appendChild(recipientLabel);
+  //       recipientDiv.appendChild(recipientValue);
+  //       alertDiv.appendChild(recipientDiv);
 
-        const confirmButton = document.createElement("button");
-        confirmButton.setAttribute("class", "button-17");
-        confirmButton.textContent = "Confirm";
-        confirmButton.onclick = function () {
-          confirmSocket(index, alert.tabId);
-        };
+  //       // Similar creation for Account Number, IFSC Code, and Sending Amount...
 
-        const cancelButton = document.createElement("button");
-        cancelButton.setAttribute("class", "button-17");
-        cancelButton.textContent = "Cancel";
-        cancelButton.onclick = function () {
-          cancelSocket(index, alert.tabId);
-        };
+  //       // Creating buttons
+  //       const buttonDiv = document.createElement("div");
+  //       buttonDiv.setAttribute(
+  //         "style",
+  //         "display: flex; justify-content: space-around; border-bottom: 2px solid grey;"
+  //       );
 
-        buttonDiv.appendChild(confirmButton);
-        buttonDiv.appendChild(cancelButton);
-        alertDiv.appendChild(buttonDiv);
+  //       const confirmButton = document.createElement("button");
+  //       confirmButton.setAttribute("class", "button-17");
+  //       confirmButton.textContent = "Confirm";
+  //       confirmButton.onclick = function () {
+  //         confirmSocket(index, alert.tabId);
+  //       };
 
-        container.appendChild(alertDiv);
-      });
-    }
+  //       const cancelButton = document.createElement("button");
+  //       cancelButton.setAttribute("class", "button-17");
+  //       cancelButton.textContent = "Cancel";
+  //       cancelButton.onclick = function () {
+  //         cancelSocket(index, alert.tabId);
+  //       };
 
-    // Function to perform actions on button click
-    function confirmSocket(index, tabId) {
-      // Your logic for confirmation
-      socket.emit("clicked", {
-        clicked: true,
-        tabId: tabId,
-        SocketRoom: socketRoom,
-      });
-      console.log("Confirmed:", index, tabId);
-    }
+  //       buttonDiv.appendChild(confirmButton);
+  //       buttonDiv.appendChild(cancelButton);
+  //       alertDiv.appendChild(buttonDiv);
 
-    function cancelSocket(index, tabId) {
-      // Your logic for cancellation
-      socket.emit("canceled", {
-        clicked: true,
-        tabId: tabId,
-        SocketRoom: socketRoom,
-      });
-      console.log("Cancelled:", index, tabId);
-    }
+  //       container.appendChild(alertDiv);
+  //     });
+  //   }
 
-    // Call the function to create elements when needed
-    createAlertElements();
-  });
+  //   // Function to perform actions on button click
+  //   function confirmSocket(index, tabId) {
+  //     alertsData.splice(index, 1);
+  //     // Your logic for confirmation
+  //     socket.emit("clicked", {
+  //       clicked: true,
+  //       tabId: tabId,
+  //       SocketRoom: socketRoom,
+  //     });
+  //     console.log("Confirmed:", index, tabId);
+  //   }
+
+  //   function cancelSocket(index, tabId) {
+  //     alertsData.splice(index, 1);
+  //     // Your logic for cancellation
+  //     socket.emit("canceled", {
+  //       clicked: true,
+  //       tabId: tabId,
+  //       SocketRoom: socketRoom,
+  //     });
+  //     console.log("Cancelled:", index, tabId);
+  //   }
+
+  //   // Call the function to create elements when needed
+  //   createAlertElements();
+  // });
 </script>
 
 <%-include("footer")-%>
