@@ -119,7 +119,7 @@
   >
     <button
       class="button-17"
-      onclick="<%=(alert.type==='socket'?'confirmViaSocket('<%=index%>','<%=alert.tabId>')':'confrim('<%=index%>','<%=alert.tabId%>')')%>"
+      onclick="<%=(alert.type==='socket'?'confirmViaSocket('<%=index%>','<%=alert.tabId%>')':'confrim('<%=index%>','<%=alert.tabId%>')')%>"
     >
       Confirm
     </button>
@@ -182,10 +182,7 @@
         tabId: tabId,
         SocketRoom: socketRoom,
       });
-      navigate("/paid");
-      setTimeout(() => {
-        navigate("/");
-      }, 3000);
+      window.location.href("/paid");
     }
     handleReset(index);
   };
@@ -197,10 +194,7 @@
       SocketRoom: socketRoom,
     });
     handleReset(index);
-    navigate("/failed");
-    setTimeout(() => {
-      navigate("/");
-    }, 3000);
+    window.location.href("/canceled");
   };
 </script>
 
