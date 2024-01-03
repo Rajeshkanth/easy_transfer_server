@@ -136,7 +136,6 @@ io.on("connection", (socket) => {
     );
 
     if (itemIndex !== -1) {
-      // Remove the item from the array using splice
       receivedPaymentAlerts.splice(itemIndex, 1);
     }
 
@@ -146,6 +145,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("canceled", (data) => {
+    const itemIndex = receivedPaymentAlerts.findIndex(
+      (item) => item.tabId === data.tabId
+    );
+
+    if (itemIndex !== -1) {
+      receivedPaymentAlerts.splice(itemIndex, 1);
+    }
     if (data.cancel) {
       io.to(data.tabId).emit("failed", true);
     }

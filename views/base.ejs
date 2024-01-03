@@ -116,8 +116,6 @@
       SocketRoom: socketRoom,
     });
     window.location.href = "/paid";
-
-    handleReset(index);
   };
 
   const cancelViaSocket = (index, tabId) => {
@@ -126,7 +124,7 @@
       tabId: tabId,
       SocketRoom: socketRoom,
     });
-    handleReset(index);
+
     window.location.href = "/canceled";
   };
 </script>
