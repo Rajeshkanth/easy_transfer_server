@@ -6,9 +6,9 @@
 
 <div
   class="form-container"
-  style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
+  style="height: <%= AlertValue.length > 3?'auto':'100vh'%>;"
 >
-  <% AlertValue.forEach((alert, index) =>{ %>
+  <%= AlertValue.forEach((alert, index) =>{ %>
   <!-- 
   <div
     key="<%=index%>"
