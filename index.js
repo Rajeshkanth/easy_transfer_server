@@ -132,7 +132,7 @@ io.on("connection", (socket) => {
     console.log("tab id", data.tabId);
     console.log(`payment confirmed ${roomName}`);
     const itemIndex = receivedPaymentAlerts.findIndex(
-      (item) => item.tabId === tabId
+      (item) => item.tabId === data.tabId
     );
 
     if (itemIndex !== -1) {
