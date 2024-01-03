@@ -9,72 +9,6 @@
   style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
 >
   <% AlertValue.forEach((alert, index) =>{ %>
-  <!-- 
-  <div
-    key="<%=index%>"
-    style="
-      margin: 2rem;
-      padding: 2rem;
-      /* margin-top: 15vh; */
-      display: flex;
-      flex-direction: column;
-      border: 1px solid thistle;
-      border-bottom: 10px double rgb(33, 33, 212);
-      border-radius: 15px;
-      /* border-top-left-radius: 0px; */
-      background-color: white;
-    "
-  >
-    <h1 style="margin: 4px">₹ <%=alert.Amount%></h1>
-    <strong style="margin: 4px">payment to <%=alert.AccHolder %></strong>
-
-    <div style="display: flex">
-      <button
-        style="
-          margin: 2rem 0;
-          margin-bottom: 0.4rem;
-          padding: 0.4rem 0.4rem;
-          width: 50%;
-          background-color: rgb(66, 209, 145);
-          border-radius: 3px;
-          /* border: 1px solid rgb(1, 0, 0); */
-          border: 2px solid;
-          outline: 0;
-          box-sizing: border-box;
-          color: white;
-          font-size: 17px;
-          font-weight: bold;
-          outline: 1px solid black;
-        "
-        onclick="confirm( ' <%=index%>','<%=alert.tabId%>')"
-      >
-        confirm
-      </button>
-
-      <button
-        style="
-          margin: 2rem 1rem;
-          margin-bottom: 0.4rem;
-          padding: 0.4rem 0.4rem;
-          width: 50%;
-          /* background-color: rgb(234, 243, 244); */
-          background-color: rgb(230, 71, 71);
-          border-radius: 3px;
-          border: 2px solid rgb(253, 253, 253);
-          color: white;
-          /* font: 17px bold; */
-          font-size: 17px;
-          font-weight: bold;
-          /* border: 0; */
-          outline: 1px solid black;
-          box-sizing: border-box;
-        "
-        onclick="cancel( ' <%=index%>','<%=alert.tabId%>')"
-      >
-        cancel
-      </button>
-    </div>
-  </div> -->
 
   <div key="<%=index%>" style="margin: 10px; border-bottom: 1px solid gray">
     <h5 style="margin-left: 2rem; margin: 0; margin-bottom: 0.4rem">
@@ -119,13 +53,13 @@
   >
     <button
       class="button-17"
-      onclick="<%=(alert.type==='socket'?'confirmViaSocket('<%=index%>','<%=alert.tabId%>')':'confrim('<%=index%>','<%=alert.tabId%>')')%>"
+      onclick="<%= alert.type === 'socket' ? 'confirmViaSocket(\'' + index + '\', \'' + alert.tabId + '\')' : 'confirm(\'' + index + '\', \'' + alert.tabId + '\')' %>"
     >
       Confirm
     </button>
     <button
       class="button-17"
-      onclick="<%=(alert.type==='socket'? 'cancelViaSocket('<%=index%>','<%=alert.tabId%>')':'cancel( ' <%=index%>','<%=alert.tabId%>')')%>"
+      onclick="<%= alert.type === 'socket' ? 'cancelViaSocket(\'' + index + '\', \'' + alert.tabId + '\')' : 'cancel(\'' + index + '\', \'' + alert.tabId + '\')' %>"
     >
       Cancel
     </button>
