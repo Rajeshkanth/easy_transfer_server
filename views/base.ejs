@@ -118,7 +118,7 @@
     window.location.href = "/paid";
   };
 
-  const cancelViaSocket = (index, tabId) => {
+  const cancelViaSocket = (index, tabId, socketRoom) => {
     socket.emit("canceled", {
       cancel: true,
       tabId: tabId,
