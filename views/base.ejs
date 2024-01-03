@@ -6,9 +6,9 @@
 
 <div
   class="form-container"
-  style="height: <%= AlertValue.length > 3?'auto':'100vh'%>;"
+  style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
 >
-  <%= AlertValue.forEach((alert, index) =>{ %>
+  <% AlertValue.forEach((alert, index) =>{ %>
   <!-- 
   <div
     key="<%=index%>"
@@ -119,11 +119,10 @@
   >
     <button
       class="button-17"
-      onclick="<%= alert.type==='socket ? `confirmViaSocket('<%=index%>','<%=alert.tabId%>')`:`confirm('<%=index%>','<%=alert.tabId%>')`%>"
+      onclick="confirm( ' <%=index%>','<%=alert.tabId%>')"
     >
       Confirm
     </button>
-
     <button
       class="button-17"
       onclick="cancel( ' <%=index%>','<%=alert.tabId%>')"
@@ -175,17 +174,6 @@
   const socket = io.connect("https://polling-server.onrender.com");
   const alertsData = [];
   let socketRoom;
-
-  const confirmViaSocket = (index, tabId) => {
-    socket.emit("clicked", {
-      clicked: true,
-      tabId: tabId,
-      SocketRoom: socketRoom,
-    });
-    window.location.href = "/paid";
-
-    handleReset(index);
-  };
 
   // socket.on("paymentConfirmAlert", (data) => {
   //   console.log(data);
