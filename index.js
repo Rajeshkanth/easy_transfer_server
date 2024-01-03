@@ -131,6 +131,15 @@ io.on("connection", (socket) => {
     const roomName = data.SocketRoom;
     console.log("tab id", data.tabId);
     console.log(`payment confirmed ${roomName}`);
+    const itemIndex = receivedPaymentAlerts.findIndex(
+      (item) => item.tabId === tabId
+    );
+
+    if (itemIndex !== -1) {
+      // Remove the item from the array using splice
+      receivedPaymentAlerts.splice(itemIndex, 1);
+    }
+
     if (data.clicked) {
       io.to(data.tabId).emit("success", true); // Emit success to specific tabId
     }
