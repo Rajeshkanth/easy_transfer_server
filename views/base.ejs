@@ -119,13 +119,13 @@
   >
     <button
       class="button-17"
-      onclick="<%=(alert.type===`socket`?`confirmViaSocket('<%=index%>','<%=alert.tabId>')`:`confrim('<%=index%>','<%=alert.tabId%>')`)%>"
+      onclick="<%=(alert.type==='socket'?'confirmViaSocket('<%=index%>','<%=alert.tabId>')':'confrim('<%=index%>','<%=alert.tabId%>')')%>"
     >
       Confirm
     </button>
     <button
       class="button-17"
-      onclick="<%=(alert.type===`socket`? `cancelViaSocket('<%=index%>','<%=alert.tabId%>')`:`cancel( ' <%=index%>','<%=alert.tabId%>')`)%>"
+      onclick="<%=(alert.type==='socket'? 'cancelViaSocket('<%=index%>','<%=alert.tabId%>')':'cancel( ' <%=index%>','<%=alert.tabId%>')')%>"
     >
       Cancel
     </button>
