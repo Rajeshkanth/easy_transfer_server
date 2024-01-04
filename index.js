@@ -23,6 +23,10 @@ const port = process.env.PORT;
 if (process.env.CONNECTION_METHOD !== "socket") {
   app.use(bodyParser.json());
 
+  app.post("/connectionType", (req, res) => {
+    res.status(201).send({ type: "polling" });
+  });
+
   app.post("/fromPaymentAlert", (req, res) => {
     //   console.log(req.body);
     newRequest = req.body.data;
