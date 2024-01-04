@@ -6,6 +6,7 @@
   "scripts": {
     "server": "npm-run-all --parallel watch server",
     "start": "nodemon index.js ",
+    "start:socket": "CONNECTION_METHOD=socket nodemon index.js",
     "watch": "nodemon --ext *"
   },
   "keywords": [],
