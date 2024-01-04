@@ -162,6 +162,13 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
   });
+
+  app.get("/", (req, res) => {
+    res.render("base", {
+      title: "payment alert",
+      AlertValue: receivedPaymentAlerts,
+    });
+  });
   const port = 3010;
   server.listen(port, () => {
     console.log("server running on ", port);
