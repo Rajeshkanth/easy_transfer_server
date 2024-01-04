@@ -8,6 +8,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+app.set("view engine", "ejs");
 
 app.use(
   cors({
@@ -21,8 +22,6 @@ const port = process.env.PORT;
 
 if (process.env.CONNECTION_METHOD !== "socket") {
   app.use(bodyParser.json());
-
-  app.set("view engine", "ejs");
 
   app.post("/fromPaymentAlert", (req, res) => {
     //   console.log(req.body);
