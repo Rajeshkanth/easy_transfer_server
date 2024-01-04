@@ -180,7 +180,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       AlertValue: receivedPaymentAlerts,
     });
   });
-  const port = 3010;
+  const port = process.env.PORT;
   server.listen(port, () => {
     console.log("server running on ", port);
   });
