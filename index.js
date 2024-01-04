@@ -162,6 +162,14 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
   });
 
+  app.get("/paid", (req, res) => {
+    res.render("paid");
+  });
+
+  app.get("/canceled", (req, res) => {
+    res.render("canceled");
+  });
+
   app.get("/", (req, res) => {
     res.render("base", {
       title: "payment alert",
