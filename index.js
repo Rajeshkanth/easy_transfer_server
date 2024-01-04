@@ -20,7 +20,7 @@ const receivedPaymentAlerts = [];
 const confirmationstatus = {};
 const port = process.env.PORT;
 
-if (process.env.CONNECTION_METHOD !== "socket") {
+if (process.env.CONNECTION_METHOD === "polling") {
   app.use(bodyParser.json());
 
   app.post("/connectionType", (req, res) => {
