@@ -129,6 +129,29 @@ if (process.env.CONNECTION_METHOD === "polling") {
     }
   });
 
+  app.post("/updateProfile", async (req, res) => {
+    const { number, name } = req.body;
+
+    const numberFound = await collection.findOne({ mobileNumber: number });
+
+    if (numberFound) {
+      // res.status(200).send();
+      console.log("Number found");
+      const updateResult = await collection.updateOne(
+        { mobileNumber: number },
+        { $set: { userName: name } }
+      );
+      if (updateResult.modifiedCount > 0) {
+        res.status(200).send({ data: name });
+        console.log("Name updated");
+      } else {
+        res.status(201).send("Failed to update profile");
+      }
+    }
+  });
+
+  //////////////////////////////////////////////
+
   app.get("/paid", (req, res) => {
     res.render("paid");
   });
