@@ -117,11 +117,14 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
     if (newUser) {
       res.status(201).send();
+      console.log("User mail is not registerd");
     } else {
       if (newUser.password === Password) {
         res.status(200).send();
+        console.log("logged in");
       } else {
         res.status(202).send();
+        console.log("Password isn't match");
       }
     }
   });
