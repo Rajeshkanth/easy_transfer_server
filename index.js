@@ -146,7 +146,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
         res.status(200).send({ data: name });
         console.log("Name updated");
       } else {
-        res.status(201).send("Failed to update profile");
+        res.status(500).send("Failed to update profile");
         console.log("not found");
       }
     }
