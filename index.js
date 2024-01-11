@@ -133,6 +133,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
     const { number, name } = req.body;
 
     const numberFound = await collection.findOne({ mobileNumber: number });
+    console.log("from profile");
 
     if (numberFound) {
       // res.status(200).send();
