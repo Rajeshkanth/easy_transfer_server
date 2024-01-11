@@ -8,6 +8,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const { default: mongoose } = require("mongoose");
 app.set("view engine", "ejs");
 
 app.use(
@@ -16,9 +17,27 @@ app.use(
   })
 );
 
+const userSchema = new mongoose.Schema({
+  mobileNumber: {
+    type: Number,
+    required: true,
+  },
+  password: {
+    type: String,
+    reqired: true,
+  },
+});
+
+const collection = new mongoose.model("user", userSchema);
+// const data = {
+//   mobileNumber: 99426,
+//   password: 123,
+// };
+
 const receivedPaymentAlerts = [];
 const confirmationstatus = {};
 const port = process.env.PORT;
+// collection.insertMany(receivedPaymentAlerts);
 
 if (process.env.CONNECTION_METHOD === "polling") {
   app.use(bodyParser.json());
@@ -27,10 +46,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
     res.status(201).send({ type: "polling" });
   });
 
-  app.post("/fromPaymentAlert", (req, res) => {
+  app.post("/fromPaymentAlert", async (req, res) => {
     //   console.log(req.body);
     newRequest = req.body.data;
     receivedPaymentAlerts.push(newRequest);
+
+    collection.insertMany([newRequest]);
+
+    console.log("saved");
+
     res.status(200).send("received successfully");
   });
 
@@ -69,6 +93,21 @@ if (process.env.CONNECTION_METHOD === "polling") {
     }
   });
 
+  app.post("/toDB", async (req, res) => {
+    const { Mobile, Password } = req.body.data;
+    const existingUser = await collection.findOne({ mobileNumber: Mobile });
+    if (existingUser) {
+      res.status(201).send({ data: "Entered mail is already registered!" });
+    } else {
+      const data = {
+        mobileNumber: Mobile,
+        password: Password,
+      };
+      collection.insertMany([data]);
+      res.status(200).send();
+    }
+  });
+
   app.get("/paid", (req, res) => {
     res.render("paid");
   });
@@ -83,10 +122,20 @@ if (process.env.CONNECTION_METHOD === "polling") {
       AlertValue: receivedPaymentAlerts,
     });
   });
+  mongoose
+    .connect(
+      "mongodb+srv://Rajesh:rajesh@cluster0.q4agnxw.mongodb.net/EasyTransfer?retryWrites=true&w=majority"
+    )
+    .then(() => {
+      console.log("Db is connected");
 
-  app.listen(port, () => {
-    console.log("server running on port 8080");
-  });
+      app.listen(port, () => {
+        console.log("server running on port 8080");
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
 if (process.env.CONNECTION_METHOD === "socket") {
