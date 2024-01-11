@@ -94,10 +94,13 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/toDB", async (req, res) => {
-    const { Mobile, Password } = req.body.data;
+    // console.log(req.body);
+    const { Mobile, Password } = req.body;
+    // console.log(req.body);
     const existingUser = await collection.findOne({ mobileNumber: Mobile });
     if (existingUser) {
-      res.status(201).send({ data: "Entered mail is already registered!" });
+      console.log("User Already");
+      res.status(201).send();
     } else {
       const data = {
         mobileNumber: Mobile,
@@ -105,6 +108,21 @@ if (process.env.CONNECTION_METHOD === "polling") {
       };
       collection.insertMany([data]);
       res.status(200).send();
+    }
+  });
+
+  app.post("/loginRequest", async (req, res) => {
+    const { Mobile, Password } = req.body;
+    const newUser = await collection.findOne({ mobileNumber: Mobile });
+
+    if (newUser) {
+      res.status(201).send();
+    } else {
+      if (newUser.password === Password) {
+        res.status(200).send();
+      } else {
+        res.status(202).send();
+      }
     }
   });
 
@@ -124,7 +142,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
   mongoose
     .connect(
-      "mongodb+srv://Rajesh:rajesh@cluster0.q4agnxw.mongodb.net/EasyTransfer?retryWrites=true&w=majority"
+      // "mongodb+srv://Rajesh:rajesh@cluster0.q4agnxw.mongodb.net/EasyTransfer?retryWrites=true&w=majority"
+      EASY_TRANSFER_DB
     )
     .then(() => {
       console.log("Db is connected");
