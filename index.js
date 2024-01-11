@@ -146,6 +146,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
         console.log("Name updated");
       } else {
         res.status(201).send("Failed to update profile");
+        console.log("not found");
       }
     }
   });
