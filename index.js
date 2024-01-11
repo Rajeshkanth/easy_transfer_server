@@ -143,7 +143,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
   mongoose
     .connect(
       // "mongodb+srv://Rajesh:rajesh@cluster0.q4agnxw.mongodb.net/EasyTransfer?retryWrites=true&w=majority"
-      EASY_TRANSFER_DB
+      process.env.EASY_TRANSFER_DB
     )
     .then(() => {
       console.log("Db is connected");
