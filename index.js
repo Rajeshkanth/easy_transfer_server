@@ -155,6 +155,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
     }
   });
 
+  app.post("/checkUserName", async (req, res) => {
+    const number = req.body.regNumber;
+    const numberFound = await collection.findOne({ mobileNumber: number });
+    if (numberFound) {
+      // res.status(200).send({user:numberFound.userName})
+      console.log(numberFound);
+    }
+  });
+
   //////////////////////////////////////////////
 
   app.get("/paid", (req, res) => {
