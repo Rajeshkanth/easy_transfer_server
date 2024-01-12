@@ -157,11 +157,10 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
   app.post("/checkUserName", async (req, res) => {
     const number = req.body.regNumber;
-    console.log(number);
+    console.log("Logged as", number);
     const numberFound = await collection.findOne({ mobileNumber: number });
-    console.log(numberFound);
     if (numberFound) {
-      // res.status(200).send({user:numberFound.userName})
+      res.status(200).send({ user: numberFound.userName });
       console.log(numberFound);
     } else {
       console.log("number not found in user name checking");
