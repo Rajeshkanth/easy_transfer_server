@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     reqired: true,
   },
+  userName: {
+    type: String,
+  },
 });
 
 const collection = new mongoose.model("user", userSchema);
