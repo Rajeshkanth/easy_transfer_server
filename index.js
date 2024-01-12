@@ -146,7 +146,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
         { $set: { userName: name } }
       );
       if (updateResult.modifiedCount > 0) {
-        res.status(200).send({ data: name });
+        res.status(200).send({ userName: name });
         console.log("Name updated");
       }
     } else {
