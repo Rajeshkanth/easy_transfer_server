@@ -130,16 +130,16 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/updateProfile", async (req, res) => {
-    const { number, name } = req.body;
+    const { data, name } = req.body;
 
-    const numberFound = await collection.findOne({ mobileNumber: number });
+    const numberFound = await collection.findOne({ mobileNumber: data });
     console.log("from profile");
 
     if (numberFound) {
       // res.status(200).send();
       console.log("Number found");
       const updateResult = await collection.updateOne(
-        { mobileNumber: number },
+        { mobileNumber: data },
         { $set: { userName: name } }
       );
       if (updateResult.modifiedCount > 0) {
