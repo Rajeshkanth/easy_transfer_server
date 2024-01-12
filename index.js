@@ -161,6 +161,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
     if (numberFound) {
       // res.status(200).send({user:numberFound.userName})
       console.log(numberFound);
+    } else {
+      console.log("number not found in user name checking");
     }
   });
 
