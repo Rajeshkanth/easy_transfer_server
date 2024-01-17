@@ -366,8 +366,8 @@ if (process.env.CONNECTION_METHOD === "socket") {
     .then(() => {
       console.log("Db is connected");
 
-      app.listen(port, () => {
-        console.log("server running on port ", port);
+      app.listen(8080, () => {
+        console.log("server running on port 8080");
       });
     })
     .catch((error) => {
