@@ -30,9 +30,9 @@ const databaseConnection = async () => {
     .then(() => {
       console.log("Db is connected");
 
-      app.listen(8080, () => {
-        console.log("server running on port 8080");
-      });
+      //   app.listen(8080, () => {
+      //     console.log("server running on port 8080");
+      //   });
     })
     .catch((error) => {
       console.log(error);
