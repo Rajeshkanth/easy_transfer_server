@@ -159,8 +159,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
     });
   });
 
-  app.listen(8080, () => {
-    console.log("server running on port 8080");
+  app.listen(port, () => {
+    console.log("server running on port ,", port);
   });
   databaseConnection();
 }
@@ -328,7 +328,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
   });
 
-  const port = process.env.PORT;
+  // const port = process.env.PORT;
   databaseConnection();
 
   server.listen(port, () => {
