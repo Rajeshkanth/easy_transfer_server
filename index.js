@@ -17,6 +17,13 @@ app.use(
   })
 );
 
+// Age: age,
+// DOB: dob,
+// AccNum: accNumber,
+// Card: card,
+// CVV: cvv,
+// ExpireDate: expireDate,
+
 const userSchema = new mongoose.Schema({
   mobileNumber: {
     type: Number,
@@ -29,6 +36,35 @@ const userSchema = new mongoose.Schema({
   userName: {
     type: String,
   },
+  age: {
+    type: Number,
+  },
+  dob: {
+    type: Date,
+  },
+});
+
+userSchema.pre("save", async function (next) {
+  if (!this.isNew) {
+    // If the document is not new, do not generate a new _id
+    return next();
+  }
+
+  try {
+    // Find the highest existing _id in the collection
+    const highestIdDocument = await this.constructor
+      .findOne({}, { _id: 1 })
+      .sort({ _id: -1 })
+      .limit(1)
+      .exec();
+
+    // Calculate the next sequential _id
+    this._id = highestIdDocument ? highestIdDocument._id + 1 : 1;
+
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 const collection = new mongoose.model("user", userSchema);
@@ -133,7 +169,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/updateProfile", async (req, res) => {
-    const { data, name } = req.body;
+    const { data, name, Age, DOB, AccNum, Card, CVV, ExpireDate } = req.body;
 
     const numberFound = await collection.findOne({ mobileNumber: data });
     console.log("from profile");
@@ -184,10 +220,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
     });
   });
   mongoose
-    .connect(
-      // "mongodb+srv://Rajesh:rajesh@cluster0.q4agnxw.mongodb.net/EasyTransfer?retryWrites=true&w=majority"
-      process.env.EASY_TRANSFER_DB
-    )
+    .connect(process.env.EASY_TRANSFER_DB)
     .then(() => {
       console.log("Db is connected");
 
@@ -221,6 +254,41 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
     io.emit("connection_type", {
       type: "socket",
+    });
+
+    socket.on("signUpUser", async (data) => {
+      const { Mobile, Password } = data;
+      const existingUser = await collection.findOne({ mobileNumber: Mobile });
+      if (existingUser) {
+        console.log("User Already");
+        io.emit("userRegisteredAlready");
+      } else {
+        const data = {
+          mobileNumber: Mobile,
+          password: Password,
+        };
+        collection.insertMany([data]);
+        io.emit("userRegistered");
+      }
+    });
+
+    socket.on("login", async (data) => {
+      const { Mobile, Password } = data;
+
+      const newUser = await collection.findOne({ mobileNumber: Mobile });
+
+      if (newUser) {
+        if (newUser.password === Password) {
+          io.emit("loginSuccess");
+          console.log("logged in");
+        } else {
+          io.emit("loginFailed");
+          console.log("Password isn't match");
+        }
+      } else {
+        io.emit("newUser");
+        console.log("User mail is not registerd");
+      }
     });
 
     socket.on("paymentPageConnected", (data) => {
@@ -291,7 +359,21 @@ if (process.env.CONNECTION_METHOD === "socket") {
       AlertValue: receivedPaymentAlerts,
     });
   });
+
   const port = process.env.PORT;
+  mongoose
+    .connect(process.env.EASY_TRANSFER_DB)
+    .then(() => {
+      console.log("Db is connected");
+
+      app.listen(port, () => {
+        console.log("server running on port ", port);
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
   server.listen(port, () => {
     console.log("server running on ", port);
   });
