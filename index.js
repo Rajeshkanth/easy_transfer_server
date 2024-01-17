@@ -1,10 +1,6 @@
 require("dotenv").config();
 const { databaseConnection, collection } = require("./db");
 
-const serverURl = process.env.REACT_APP_SOCKET_API;
-// const pollingSite = `${serverURl}/polling`;
-// const socketStie = process.env.CONNECTION_METHOD;
-
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -33,7 +29,6 @@ app.use(
 const receivedPaymentAlerts = [];
 const confirmationstatus = {};
 const port = process.env.PORT;
-// collection.insertMany(receivedPaymentAlerts);
 
 if (process.env.CONNECTION_METHOD === "polling") {
   app.use(bodyParser.json());
@@ -57,17 +52,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
   app.post("/confirm/:tabId", (req, res) => {
     console.log(req.params.tabId);
     const tabId = req.params.tabId;
-    // const status = confirmationstatus[tabId];
+
     const action = req.body.Action;
-    //   console.log(status);
+
     if (action === "confirm") {
-      // confirmed = true;
       confirmationstatus[tabId] = "confirm";
       console.log("confirmed");
       receivedPaymentAlerts.splice(req.body.index, 1);
       res.status(200).send();
     } else if (action === "cancel") {
-      // canceled = true;
       confirmationstatus[tabId] = "cancel";
       console.log("canceled");
       receivedPaymentAlerts.splice(req.body.index, 1);
@@ -78,7 +71,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
     const tabId = req.params.tabId;
 
     if (confirmationstatus[tabId] === "confirm") {
-      // confirmed = false;
       delete confirmationstatus[tabId];
       console.log("/success :", tabId);
       res.status(200).send("confirmed");
@@ -90,9 +82,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/toDB", async (req, res) => {
-    // console.log(req.body);
     const { Mobile, Password } = req.body;
-    // console.log(req.body);
+
     const existingUser = await collection.findOne({ mobileNumber: Mobile });
     if (existingUser) {
       console.log("User Already");
@@ -132,7 +123,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
     console.log("from profile");
 
     if (numberFound) {
-      // res.status(200).send();
       console.log("Number found");
       const updateResult = await collection.updateOne(
         { mobileNumber: data },
@@ -176,18 +166,10 @@ if (process.env.CONNECTION_METHOD === "polling") {
       AlertValue: receivedPaymentAlerts,
     });
   });
-  // mongoose
-  //   .connect(process.env.EASY_TRANSFER_DB)
-  //   .then(() => {
-  //     console.log("Db is connected");
+  app.listen(8080, () => {
+    console.log("server running on port 8080");
+  });
 
-  //     app.listen(port, () => {
-  //       console.log("server running on port 8080");
-  //     });
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
   databaseConnection();
 }
 
@@ -285,7 +267,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
 
       if (data.clicked) {
-        io.to(data.tabId).emit("success", true); // Emit success to specific tabId
+        io.to(data.tabId).emit("success", true);
       }
     });
 
@@ -320,22 +302,18 @@ if (process.env.CONNECTION_METHOD === "socket") {
       console.log("from profile");
 
       if (numberFound) {
-        // res.status(200).send();
         console.log("Number found");
         const updateResult = await collection.updateOne(
           { mobileNumber: num },
           { $set: { userName: name } }
         );
         if (updateResult.modifiedCount > 0) {
-          // res.status(200).send({ userName: name });
           io.emit("profileUpdated", {
             userName: name,
           });
           console.log("Name updated");
         }
       } else {
-        // res.status(500).send("Failed to update profile");
-
         console.log("not found");
       }
     });

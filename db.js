@@ -1,4 +1,6 @@
 const { default: mongoose } = require("mongoose");
+const express = require("express");
+const app = express();
 
 const userSchema = new mongoose.Schema({
   mobileNumber: {
@@ -27,10 +29,6 @@ const databaseConnection = async () => {
     .connect(process.env.EASY_TRANSFER_DB)
     .then(() => {
       console.log("Db is connected");
-
-      app.listen(8080, () => {
-        console.log("server running on port 8080");
-      });
     })
     .catch((error) => {
       console.log(error);
