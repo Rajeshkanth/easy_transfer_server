@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { default: mongoose } = require("mongoose");
 
 const serverURl = process.env.REACT_APP_SOCKET_API;
 // const pollingSite = `${serverURl}/polling`;
