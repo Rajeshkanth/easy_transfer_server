@@ -343,18 +343,17 @@ if (process.env.CONNECTION_METHOD === "socket") {
         io.to(data.tabId).emit("failed", true);
       }
     });
-  });
-
-  socket.on("checkUserName", async (data) => {
-    const number = data.regNumber;
-    const numberFound = await collection.findOne({ mobileNumber: number });
-    if (numberFound) {
-      io.emit("userNameAvailable", { user: numberFound.userName });
-      console.log(numberFound);
-    } else {
-      io.emit("userNotFound");
-      console.log("number not found in user name checking");
-    }
+    socket.on("checkUserName", async (data) => {
+      const number = data.regNumber;
+      const numberFound = await collection.findOne({ mobileNumber: number });
+      if (numberFound) {
+        io.emit("userNameAvailable", { user: numberFound.userName });
+        console.log(numberFound);
+      } else {
+        io.emit("userNotFound");
+        console.log("number not found in user name checking");
+      }
+    });
   });
 
   app.get("/paid", (req, res) => {
