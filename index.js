@@ -1,5 +1,4 @@
 require("dotenv").config();
-// const { default: mongoose } = require("mongoose");
 const { databaseConnection, collection } = require("./db");
 
 const express = require("express");
@@ -30,7 +29,6 @@ app.use(
 const receivedPaymentAlerts = [];
 const confirmationstatus = {};
 const port = process.env.PORT;
-// collection.insertMany(receivedPaymentAlerts);
 
 if (process.env.CONNECTION_METHOD === "polling") {
   app.use(bodyParser.json());
@@ -40,31 +38,23 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/fromPaymentAlert", async (req, res) => {
-    //   console.log(req.body);
     newRequest = req.body.data;
     receivedPaymentAlerts.push(newRequest);
-
     collection.insertMany([newRequest]);
-
     console.log("saved");
-
     res.status(200).send("received successfully");
   });
 
   app.post("/confirm/:tabId", (req, res) => {
     console.log(req.params.tabId);
     const tabId = req.params.tabId;
-    // const status = confirmationstatus[tabId];
     const action = req.body.Action;
-    //   console.log(status);
     if (action === "confirm") {
-      // confirmed = true;
       confirmationstatus[tabId] = "confirm";
       console.log("confirmed");
       receivedPaymentAlerts.splice(req.body.index, 1);
       res.status(200).send();
     } else if (action === "cancel") {
-      // canceled = true;
       confirmationstatus[tabId] = "cancel";
       console.log("canceled");
       receivedPaymentAlerts.splice(req.body.index, 1);
@@ -73,9 +63,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
   app.post("/success/:tabId", (req, res) => {
     const tabId = req.params.tabId;
-
     if (confirmationstatus[tabId] === "confirm") {
-      // confirmed = false;
       delete confirmationstatus[tabId];
       console.log("/success :", tabId);
       res.status(200).send("confirmed");
@@ -87,9 +75,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/toDB", async (req, res) => {
-    // console.log(req.body);
     const { Mobile, Password } = req.body;
-    // console.log(req.body);
     const existingUser = await collection.findOne({ mobileNumber: Mobile });
     if (existingUser) {
       console.log("User Already");
@@ -127,7 +113,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
     const numberFound = await collection.findOne({ mobileNumber: data });
     console.log("from profile");
-
     if (numberFound) {
       // res.status(200).send();
       console.log("Number found");
@@ -173,23 +158,14 @@ if (process.env.CONNECTION_METHOD === "polling") {
       AlertValue: receivedPaymentAlerts,
     });
   });
-  // mongoose
-  //   .connect(process.env.EASY_TRANSFER_DB)
-  //   .then(() => {
-  //     console.log("Db is connected");
 
-  //     app.listen(port, () => {
-  //       console.log("server running on port 8080");
-  //     });
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
   app.listen(8080, () => {
     console.log("server running on port 8080");
   });
   databaseConnection();
 }
+
+//  socket mode
 
 if (process.env.CONNECTION_METHOD === "socket") {
   const http = require("http");
@@ -284,7 +260,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
 
       if (data.clicked) {
-        io.to(data.tabId).emit("success", true); // Emit success to specific tabId
+        io.to(data.tabId).emit("success", true);
       }
     });
 
@@ -326,15 +302,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
           { $set: { userName: name } }
         );
         if (updateResult.modifiedCount > 0) {
-          // res.status(200).send({ userName: name });
           io.emit("profileUpdated", {
             userName: name,
           });
           console.log("Name updated");
         }
       } else {
-        // res.status(500).send("Failed to update profile");
-
         console.log("not found");
       }
     });
