@@ -1,9 +1,6 @@
 require("dotenv").config();
-const { default: mongoose } = require("mongoose");
-
-const serverURl = process.env.REACT_APP_SOCKET_API;
-// const pollingSite = `${serverURl}/polling`;
-// const socketStie = process.env.CONNECTION_METHOD;
+// const { default: mongoose } = require("mongoose");
+const { databaseConnection, collection } = require("./db");
 
 const express = require("express");
 const app = express();
@@ -176,18 +173,22 @@ if (process.env.CONNECTION_METHOD === "polling") {
       AlertValue: receivedPaymentAlerts,
     });
   });
-  mongoose
-    .connect(process.env.EASY_TRANSFER_DB)
-    .then(() => {
-      console.log("Db is connected");
+  // mongoose
+  //   .connect(process.env.EASY_TRANSFER_DB)
+  //   .then(() => {
+  //     console.log("Db is connected");
 
-      app.listen(port, () => {
-        console.log("server running on port 8080");
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  //     app.listen(port, () => {
+  //       console.log("server running on port 8080");
+  //     });
+  //   })
+  //   .catch((error) => {
+  //     console.log(error);
+  //   });
+  app.listen(8080, () => {
+    console.log("server running on port 8080");
+  });
+  databaseConnection();
 }
 
 if (process.env.CONNECTION_METHOD === "socket") {
@@ -355,6 +356,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
   });
 
   const port = process.env.PORT;
+  databaseConnection();
 
   server.listen(port, () => {
     console.log("server running on ", port);
