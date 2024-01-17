@@ -354,6 +354,20 @@ if (process.env.CONNECTION_METHOD === "socket") {
         console.log("number not found in user name checking");
       }
     });
+
+    socket.on("updateProfile", async (data) => {
+      const { num, name } = data;
+      const numberFound = await collection.findOne({ mobileNumber: num });
+      if (numberFound) {
+        // res.status(200).send({ user: numberFound.userName });
+        io.emit("profileUpdated", {
+          user: numberFound.userName,
+        });
+        console.log(numberFound);
+      } else {
+        console.log("number not found in user name checking");
+      }
+    });
   });
 
   app.get("/paid", (req, res) => {
