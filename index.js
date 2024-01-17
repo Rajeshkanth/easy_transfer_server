@@ -1,4 +1,5 @@
 require("dotenv").config();
+import { databaseConnection, collection } from "./db";
 
 const serverURl = process.env.REACT_APP_SOCKET_API;
 // const pollingSite = `${serverURl}/polling`;
@@ -8,7 +9,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { default: mongoose } = require("mongoose");
+
 app.set("view engine", "ejs");
 
 app.use(
@@ -24,50 +25,6 @@ app.use(
 // CVV: cvv,
 // ExpireDate: expireDate,
 
-const userSchema = new mongoose.Schema({
-  mobileNumber: {
-    type: Number,
-    required: true,
-  },
-  password: {
-    type: String,
-    reqired: true,
-  },
-  userName: {
-    type: String,
-  },
-  age: {
-    type: Number,
-  },
-  dob: {
-    type: Date,
-  },
-});
-
-userSchema.pre("save", async function (next) {
-  if (!this.isNew) {
-    // If the document is not new, do not generate a new _id
-    return next();
-  }
-
-  try {
-    // Find the highest existing _id in the collection
-    const highestIdDocument = await this.constructor
-      .findOne({}, { _id: 1 })
-      .sort({ _id: -1 })
-      .limit(1)
-      .exec();
-
-    // Calculate the next sequential _id
-    this._id = highestIdDocument ? highestIdDocument._id + 1 : 1;
-
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
-const collection = new mongoose.model("user", userSchema);
 // const data = {
 //   mobileNumber: 99426,
 //   password: 123,
@@ -219,18 +176,19 @@ if (process.env.CONNECTION_METHOD === "polling") {
       AlertValue: receivedPaymentAlerts,
     });
   });
-  mongoose
-    .connect(process.env.EASY_TRANSFER_DB)
-    .then(() => {
-      console.log("Db is connected");
+  // mongoose
+  //   .connect(process.env.EASY_TRANSFER_DB)
+  //   .then(() => {
+  //     console.log("Db is connected");
 
-      app.listen(port, () => {
-        console.log("server running on port 8080");
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  //     app.listen(port, () => {
+  //       console.log("server running on port 8080");
+  //     });
+  //   })
+  //   .catch((error) => {
+  //     console.log(error);
+  //   });
+  databaseConnection();
 }
 
 if (process.env.CONNECTION_METHOD === "socket") {
@@ -251,6 +209,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
   io.on("connection", (socket) => {
     console.log(`user connected: ${val++} , ${socket.id}`);
+    databaseConnection();
 
     io.emit("connection_type", {
       type: "socket",
@@ -398,18 +357,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
   });
 
   const port = process.env.PORT;
-  mongoose
-    .connect(process.env.EASY_TRANSFER_DB)
-    .then(() => {
-      console.log("Db is connected");
-
-      app.listen(8080, () => {
-        console.log("server running on port 8080");
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
 
   server.listen(port, () => {
     console.log("server running on ", port);
