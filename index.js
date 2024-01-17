@@ -358,14 +358,26 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("updateProfile", async (data) => {
       const { num, name } = data;
       const numberFound = await collection.findOne({ mobileNumber: num });
+      console.log("from profile");
+
       if (numberFound) {
-        // res.status(200).send({ user: numberFound.userName });
-        io.emit("profileUpdated", {
-          user: numberFound.userName,
-        });
-        console.log(numberFound);
+        // res.status(200).send();
+        console.log("Number found");
+        const updateResult = await collection.updateOne(
+          { mobileNumber: num },
+          { $set: { userName: name } }
+        );
+        if (updateResult.modifiedCount > 0) {
+          // res.status(200).send({ userName: name });
+          io.emit("profileUpdated", {
+            userName: name,
+          });
+          console.log("Name updated");
+        }
       } else {
-        console.log("number not found in user name checking");
+        // res.status(500).send("Failed to update profile");
+
+        console.log("not found");
       }
     });
   });
