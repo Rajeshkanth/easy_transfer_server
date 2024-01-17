@@ -29,6 +29,10 @@ const databaseConnection = async () => {
     .connect(process.env.EASY_TRANSFER_DB)
     .then(() => {
       console.log("Db is connected");
+
+      app.listen(8080, () => {
+        console.log("server running on port 8080");
+      });
     })
     .catch((error) => {
       console.log(error);
