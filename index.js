@@ -1,5 +1,5 @@
 require("dotenv").config();
-import { databaseConnection, collection } from "./db";
+const { databaseConnection, collection } = require("./db");
 
 const serverURl = process.env.REACT_APP_SOCKET_API;
 // const pollingSite = `${serverURl}/polling`;
