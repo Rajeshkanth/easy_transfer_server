@@ -118,10 +118,10 @@ if (process.env.CONNECTION_METHOD === "polling") {
       console.log("Number found");
       const updateResult = await collection.updateOne(
         { mobileNumber: data },
-        { $set: { userName: name } }
+        { $set: { userName: name, age: Age } }
       );
       if (updateResult.modifiedCount > 0) {
-        res.status(200).send({ userName: name });
+        res.status(200).send({ userName: name, age: Age });
         console.log("Name updated");
       }
     } else {
