@@ -290,7 +290,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
 
     socket.on("updateProfile", async (data) => {
-      const { num, name } = data;
+      const { num, name, age } = data;
       const numberFound = await collection.findOne({ mobileNumber: num });
       console.log("from profile");
 
@@ -299,11 +299,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
         console.log("Number found");
         const updateResult = await collection.updateOne(
           { mobileNumber: num },
-          { $set: { userName: name } }
+          { $set: { userName: name, age: age } }
         );
         if (updateResult.modifiedCount > 0) {
           io.emit("profileUpdated", {
             userName: name,
+            age: age,
           });
           console.log("Name updated");
         }
