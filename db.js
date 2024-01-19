@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
   },
   dob: {
-    type: Date,
+    type: new Date("<YYYY-mm-dd>"),
   },
   accNum: {
     type: Number,
