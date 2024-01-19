@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
   },
   dob: {
-    type: new Date("<YYYY-mm-dd>"),
+    type: Date,
   },
   accNum: {
     type: Number,
@@ -30,6 +30,13 @@ const userSchema = new mongoose.Schema({
   expireDate: {
     type: String,
   },
+});
+
+userSchema.pre("save", function (next) {
+  if (this.dob) {
+    this.dob.setUTCHours(0, 0, 0, 0);
+  }
+  next();
 });
 
 const collection = new mongoose.model("user", userSchema);
