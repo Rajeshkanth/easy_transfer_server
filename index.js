@@ -118,10 +118,22 @@ if (process.env.CONNECTION_METHOD === "polling") {
       console.log("Number found");
       const updateResult = await collection.updateOne(
         { mobileNumber: data },
-        { $set: { userName: name, age: Age } }
+        {
+          $set: {
+            userName: name,
+            age: Age,
+            dob: DOB,
+            accNum: AccNum,
+            card: Card,
+            cvv: CVV,
+            expireDate: ExpireDate,
+          },
+        }
       );
       if (updateResult.modifiedCount > 0) {
-        res.status(200).send({ userName: name, age: Age });
+        res
+          .status(200)
+          .send({ userName: name, age: Age, dob: DOB, accNum: AccNum });
         console.log("Name updated");
       }
     } else {
@@ -295,7 +307,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
 
     socket.on("updateProfile", async (data) => {
-      const { num, name, age } = data;
+      const { num, name, age, DOB, AccNum, Card, CVV, ExpireDate } = data;
       const numberFound = await collection.findOne({ mobileNumber: num });
       console.log("from profile");
 
@@ -304,12 +316,24 @@ if (process.env.CONNECTION_METHOD === "socket") {
         console.log("Number found");
         const updateResult = await collection.updateOne(
           { mobileNumber: num },
-          { $set: { userName: name, age: age } }
+          {
+            $set: {
+              userName: name,
+              age: age,
+              dob: DOB,
+              accNum: AccNum,
+              card: Card,
+              cvv: CVV,
+              expireDate: ExpireDate,
+            },
+          }
         );
         if (updateResult.modifiedCount > 0) {
           io.emit("profileUpdated", {
             userName: name,
             age: age,
+            dob: DOB,
+            accNum: AccNum,
           });
           console.log("Name updated");
         }
