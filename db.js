@@ -21,6 +21,15 @@ const userSchema = new mongoose.Schema({
   accNum: {
     type: Number,
   },
+  card: {
+    type: Number,
+  },
+  cvv: {
+    type: Number,
+  },
+  expireDate: {
+    type: Date,
+  },
 });
 
 const collection = new mongoose.model("user", userSchema);
