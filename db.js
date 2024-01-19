@@ -18,6 +18,9 @@ const userSchema = new mongoose.Schema({
   dob: {
     type: Date,
   },
+  accNum: {
+    type: Number,
+  },
 });
 
 const collection = new mongoose.model("user", userSchema);
