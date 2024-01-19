@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
   },
   expireDate: {
-    type: Date,
+    type: String,
   },
 });
 
