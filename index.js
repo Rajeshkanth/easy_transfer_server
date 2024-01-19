@@ -135,7 +135,9 @@ if (process.env.CONNECTION_METHOD === "polling") {
     console.log("Logged as", number);
     const numberFound = await collection.findOne({ mobileNumber: number });
     if (numberFound) {
-      res.status(200).send({ user: numberFound.userName });
+      res
+        .status(200)
+        .send({ user: numberFound.userName, age: numberFound.age });
       console.log(numberFound);
     } else {
       console.log("number not found in user name checking");
@@ -281,7 +283,10 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const number = data.regNumber;
       const numberFound = await collection.findOne({ mobileNumber: number });
       if (numberFound) {
-        io.emit("userNameAvailable", { user: numberFound.userName });
+        io.emit("userNameAvailable", {
+          user: numberFound.userName,
+          age: numberFound.age,
+        });
         console.log(numberFound);
       } else {
         io.emit("userNotFound");
