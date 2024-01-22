@@ -346,6 +346,39 @@ if (process.env.CONNECTION_METHOD === "socket") {
         console.log("not found");
       }
     });
+
+    socket.on("saveAccounts", async (data) => {
+      const { num } = data;
+      const regUser = await collection.findOne({ mobileNumber: num });
+      if (regUser) {
+      }
+    });
+
+    socket.on("saveNewBeneficiary", (data) => {
+      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
+        data;
+      const userFound = collection.updateOne(
+        { mobileNumber: num },
+        {
+          $set: {
+            SavedBeneficiaryName: SavedBeneficiaryName,
+            SavedAccNum: SavedAccNum,
+            SavedIfsc: SavedIfsc,
+            editable: editable,
+          },
+        }
+      );
+
+      if (userFound.modifiedCount > 0) {
+        io.emit("getSavedBeneficiary", {
+          SavedBeneficiaryName: SavedBeneficiaryName,
+          SavedAccNum: SavedAccNum,
+          SavedIfsc: SavedIfsc,
+          editable: editable,
+        });
+        console.log("account added");
+      }
+    });
   });
 
   app.get("/paid", (req, res) => {

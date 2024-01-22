@@ -30,7 +30,28 @@ const userSchema = new mongoose.Schema({
   expireDate: {
     type: String,
   },
+  savedAccounts: [
+    {
+      beneficiaryName: {
+        type: String,
+        required: true,
+      },
+      accNum: {
+        type: Number,
+        required: true,
+      },
+      ifsc: {
+        type: String,
+        required: true,
+      },
+      amount: {
+        type: Number,
+      },
+    },
+  ],
 });
+
+// const savedAccountsSchema = new mongoose.Schema({});
 
 userSchema.pre("save", function (next) {
   if (this.dob) {
@@ -40,6 +61,10 @@ userSchema.pre("save", function (next) {
 });
 
 const collection = new mongoose.model("user", userSchema);
+const accountCollection = new mongoose.model(
+  "userSaveAccounts",
+  savedAccountsSchema
+);
 
 const databaseConnection = async () => {
   await mongoose
