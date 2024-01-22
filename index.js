@@ -351,6 +351,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
       if (regUser) {
+        io.emit("getSavedBeneficiary", {
+          beneficiaryName: regUser.beneficiaryName,
+          accNum: regUser.accNum,
+          ifsc: regUser.ifsc,
+          editable: regUser.editable,
+        });
       }
     });
 
@@ -372,12 +378,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
           }
         );
         if (updateDetails.modifiedCount > 0) {
-          io.emit("getSavedBeneficiary", {
-            beneficiaryName: SavedBeneficiaryName,
-            accNum: SavedAccNum,
-            ifsc: SavedIfsc,
-            editable: editable,
-          });
+          // io.emit("getSavedBeneficiary", {
+          //   beneficiaryName: SavedBeneficiaryName,
+          //   accNum: SavedAccNum,
+          //   ifsc: SavedIfsc,
+          //   editable: editable,
+          // });
           console.log("Beneficiary updated");
         } else {
           console.log("not addded");
