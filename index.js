@@ -372,7 +372,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           }
         );
         if (updateDetails.modifiedCount > 0) {
-          io.emit("profileUpdated", {
+          io.emit("getSavedBeneficiary", {
             beneficiaryName: SavedBeneficiaryName,
             accNum: SavedAccNum,
             ifsc: SavedIfsc,
