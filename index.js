@@ -354,22 +354,26 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
-    socket.on("saveNewBeneficiary", (data) => {
+    socket.on("saveNewBeneficiary", async (data) => {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
         data;
-      const userFound = collection.updateOne(
-        { mobileNumber: num },
-        {
-          $set: {
-            SavedBeneficiaryName: SavedBeneficiaryName,
-            SavedAccNum: SavedAccNum,
-            SavedIfsc: SavedIfsc,
-            editable: editable,
-          },
-        }
-      );
+      const userFound = await collection.findOne({ mobileNumber: num });
+      if (userFound) {
+        console.log("found from saving beneficiary");
+        const updateDetails = await collection.updateOne(
+          { mobileNumber: num },
+          {
+            $set: {
+              SavedBeneficiaryName: SavedBeneficiaryName,
+              SavedAccNum: SavedAccNum,
+              SavedIfsc: SavedIfsc,
+              editable: editable,
+            },
+          }
+        );
+      }
 
-      if (userFound.modifiedCount > 0) {
+      if (updateDetails.modifiedCount > 0) {
         io.emit("getSavedBeneficiary", {
           SavedBeneficiaryName: SavedBeneficiaryName,
           SavedAccNum: SavedAccNum,
