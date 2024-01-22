@@ -366,7 +366,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         data;
       const userFound = await collection.findOne({ mobileNumber: num });
       if (userFound) {
-        console.log("found from saving beneficiary");
+        console.log("found from saving beneficiary", userFound);
         const updateDetails = await collection.updateOne(
           {
             mobileNumber: num,
