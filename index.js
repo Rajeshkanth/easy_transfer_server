@@ -367,13 +367,16 @@ if (process.env.CONNECTION_METHOD === "socket") {
       if (userFound) {
         console.log("found from saving beneficiary");
         const updateDetails = await collection.updateOne(
-          { mobileNumber: num },
+          {
+            mobileNumber: num,
+            "savedAccounts.beneficiaryName": { $exists: true },
+          },
           {
             $set: {
-              beneficiaryName: SavedBeneficiaryName,
-              accNum: SavedAccNum,
-              ifsc: SavedIfsc,
-              editable: editable,
+              "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
+              "savedAccounts.$.accNum": SavedAccNum,
+              "savedAccounts.$.ifsc": SavedIfsc,
+              "savedAccounts.$.editable": editable,
             },
           }
         );
