@@ -61,10 +61,10 @@ userSchema.pre("save", function (next) {
 });
 
 const collection = new mongoose.model("user", userSchema);
-const accountCollection = new mongoose.model(
-  "userSaveAccounts",
-  savedAccountsSchema
-);
+// const accountCollection = new mongoose.model(
+//   "userSaveAccounts",
+//   savedAccountsSchema
+// );
 
 const databaseConnection = async () => {
   await mongoose
