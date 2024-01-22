@@ -371,16 +371,15 @@ if (process.env.CONNECTION_METHOD === "socket") {
             },
           }
         );
-      }
-
-      if (updateDetails.modifiedCount > 0) {
-        io.emit("getSavedBeneficiary", {
-          SavedBeneficiaryName: SavedBeneficiaryName,
-          SavedAccNum: SavedAccNum,
-          SavedIfsc: SavedIfsc,
-          editable: editable,
-        });
-        console.log("account added");
+        if (updateDetails.modifiedCount > 0) {
+          io.emit("getSavedBeneficiary", {
+            SavedBeneficiaryName: SavedBeneficiaryName,
+            SavedAccNum: SavedAccNum,
+            SavedIfsc: SavedIfsc,
+            editable: editable,
+          });
+          console.log("account added");
+        }
       }
     });
   });
