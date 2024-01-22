@@ -379,6 +379,8 @@ if (process.env.CONNECTION_METHOD === "socket") {
             editable: editable,
           });
           console.log("account added");
+        } else {
+          console.log("not addded");
         }
       }
     });
