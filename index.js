@@ -360,41 +360,23 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const userFound = await collection.findOne({ mobileNumber: num });
       if (userFound) {
         console.log("found from saving beneficiary");
-        // const updateDetails = await collection.updateOne(
-        //   { mobileNumber: num },
-        //   {
-        //     $set: {
-        //       SavedBeneficiaryName: SavedBeneficiaryName,
-        //       SavedAccNum: SavedAccNum,
-        //       SavedIfsc: SavedIfsc,
-        //       editable: editable,
-        //     },
-        //   }
-        // );
-        // if (updateDetails.modifiedCount > 0) {
-        //   io.emit("getSavedBeneficiary", {
-        //     SavedBeneficiaryName: SavedBeneficiaryName,
-        //     SavedAccNum: SavedAccNum,
-        //     SavedIfsc: SavedIfsc,
-        //     editable: editable,
-        //   });
-        const updateResult = await collection.updateOne(
+        const updateDetails = await collection.updateOne(
           { mobileNumber: num },
           {
             $set: {
-              SavedBeneficiaryName: SavedBeneficiaryName,
-              SavedAccNum: SavedAccNum,
-              SavedIfsc: SavedIfsc,
+              beneficiaryName: SavedBeneficiaryName,
+              accNum: SavedAccNum,
+              ifsc: SavedIfsc,
               editable: editable,
             },
           }
         );
-        if (updateResult.modifiedCount > 0) {
-          io.emit("profileUpdated", {
-            userName: name,
-            age: age,
-            dob: DOB,
-            accNum: AccNum,
+        if (updateDetails.modifiedCount > 0) {
+          io.emit("getSavedBeneficiary", {
+            SavedBeneficiaryName: SavedBeneficiaryName,
+            SavedAccNum: SavedAccNum,
+            SavedIfsc: SavedIfsc,
+            editable: editable,
           });
           console.log("account added");
         } else {
