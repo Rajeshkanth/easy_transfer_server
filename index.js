@@ -370,7 +370,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         const updateDetails = await collection.updateOne(
           {
             mobileNumber: num,
-            // "savedAccounts.beneficiaryName": { $exists: true },
+            "savedAccounts.beneficiaryName": { $exists: true },
           },
           {
             $set: {
