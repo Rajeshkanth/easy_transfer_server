@@ -372,13 +372,13 @@ if (process.env.CONNECTION_METHOD === "socket") {
           }
         );
         if (updateDetails.modifiedCount > 0) {
-          io.emit("getSavedBeneficiary", {
-            SavedBeneficiaryName: SavedBeneficiaryName,
-            SavedAccNum: SavedAccNum,
-            SavedIfsc: SavedIfsc,
+          io.emit("profileUpdated", {
+            beneficiaryName: SavedBeneficiaryName,
+            accNum: SavedAccNum,
+            ifsc: SavedIfsc,
             editable: editable,
           });
-          console.log("account added");
+          console.log("Beneficiary updated");
         } else {
           console.log("not addded");
         }
