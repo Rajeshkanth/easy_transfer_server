@@ -350,6 +350,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("saveAccounts", async (data) => {
       const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
+      console.log("from save Acc ,", regUser);
       if (regUser) {
         io.emit("getSavedBeneficiary", {
           beneficiaryName: regUser.beneficiaryName,
