@@ -365,35 +365,35 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
         data;
 
-      // const saveNewAccount = {
-      //   beneficiaryName: SavedBeneficiaryName,
-      //   accNum: SavedAccNum,
-      //   ifsc: SavedIfsc,
-      //   editable: editable,
-      // };
+      const saveNewAccount = {
+        beneficiaryName: SavedBeneficiaryName,
+        accNum: SavedAccNum,
+        ifsc: SavedIfsc,
+        editable: editable,
+      };
       const userFound = await collection.findOne({ mobileNumber: num });
       if (userFound) {
         console.log("found from saving beneficiary", userFound);
         const updateDetails = await collection.updateOne(
           {
             mobileNumber: num,
-            "savedAccounts.beneficiaryName": { $exists: true },
           },
           {
-            $set: {
-              "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
-              "savedAccounts.$.accNum": SavedAccNum,
-              "savedAccounts.$.ifsc": SavedIfsc,
-              "savedAccounts.$.editable": editable,
+            $push: {
+              // "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
+              // "savedAccounts.$.accNum": SavedAccNum,
+              // "savedAccounts.$.ifsc": SavedIfsc,
+              // "savedAccounts.$.editable": editable,
+              savedAccounts: saveNewAccount,
             },
           }
         );
         if (updateDetails.modifiedCount > 0) {
           io.emit("getSavedBeneficiary", {
-            userName: name,
-            age: age,
-            dob: DOB,
-            accNum: AccNum,
+            beneficiaryName: SavedBeneficiaryName,
+            accNum: SavedAccNum,
+            ifsc: SavedIfsc,
+            editable: editable,
           });
           console.log("New details added");
         }
