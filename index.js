@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { default: mongoose } = require("mongoose");
 const { databaseConnection, collection } = require("./db");
 
 const express = require("express");
@@ -390,9 +389,8 @@ if (process.env.CONNECTION_METHOD === "socket") {
         //     },
         //   }
         // );
-        user.savedAccounts = SavedBeneficiaryName;
-
-        await user.save();
+        collection.savedAccounts = saveNewAccount;
+        collection.save();
       }
     });
   });
