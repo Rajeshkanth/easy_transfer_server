@@ -5,6 +5,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const user = mongoose.model("User", userSchema);
 
 app.set("view engine", "ejs");
 
@@ -364,34 +365,33 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("saveNewBeneficiary", async (data) => {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
         data;
+
+      const saveNewAccount = {
+        beneficiaryName: SavedBeneficiaryName,
+        accNum: SavedAccNum,
+        ifsc: SavedIfsc,
+        editable: editable,
+      };
       const userFound = await collection.findOne({ mobileNumber: num });
       if (userFound) {
         console.log("found from saving beneficiary", userFound);
-        const updateDetails = await collection.updateOne(
-          {
-            mobileNumber: num,
-            "savedAccounts.beneficiaryName": { $exists: true },
-          },
-          {
-            $set: {
-              "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
-              "savedAccounts.$.accNum": SavedAccNum,
-              "savedAccounts.$.ifsc": SavedIfsc,
-              "savedAccounts.$.editable": editable,
-            },
-          }
-        );
-        if (updateDetails.modifiedCount > 0) {
-          // io.emit("getSavedBeneficiary", {
-          //   beneficiaryName: SavedBeneficiaryName,
-          //   accNum: SavedAccNum,
-          //   ifsc: SavedIfsc,
-          //   editable: editable,
-          // });
-          console.log("Beneficiary updated");
-        } else {
-          console.log("not addded");
-        }
+        // const updateDetails = await collection.updateOne(
+        //   {
+        //     mobileNumber: num,
+        //     "savedAccounts.beneficiaryName": { $exists: true },
+        //   },
+        //   {
+        //     $set: {
+        //       "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
+        //       "savedAccounts.$.accNum": SavedAccNum,
+        //       "savedAccounts.$.ifsc": SavedIfsc,
+        //       "savedAccounts.$.editable": editable,
+        //     },
+        //   }
+        // );
+        user.savedAccounts = SavedBeneficiaryName;
+
+        await user.save();
       }
     });
   });
