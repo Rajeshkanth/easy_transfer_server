@@ -399,36 +399,40 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
     socket.on("deleteItem", async (data) => {
       const accNumToDelete = data.accNum;
-
+    
       try {
         // Assuming your collection is named "users"
-        const filter = { mobileNumber: data.num }; // Use the appropriate filter for your use case
-
+        const filter = { mobileNumber: document.cookie }; // Use the appropriate filter for your use case
+    
         // Find the document that contains the accNumToDelete in the savedAccounts array
         const update = {
           $pull: {
             savedAccounts: { accNum: accNumToDelete },
           },
         };
-
+    
         // Use the findOneAndUpdate method to update and get the original document
-        const deletedItem = await collection.findOneAndUpdate(
-          filter,
-          update,
-          { returnDocument: "before" } // "before" returns the document before the update
-        );
-
-        // Access the deleted item
-        const deletedBeneficiary = deletedItem.value.savedAccounts.find(
-          (account) => account.accNum === accNumToDelete
-        );
-
-        console.log("Deleted Beneficiary:", deletedBeneficiary);
+        const result = await collection.findOneAndUpdate(filter, update, {
+          returnDocument: "before", // "before" returns the document before the update
+        });
+    
+        // Check if the document and savedAccounts array exist
+        if (result && result.value && result.value.savedAccounts) {
+          // Access the deleted item
+          const deletedBeneficiary = result.value.savedAccounts.find(
+            (account) => account.accNum === accNumToDelete
+          );
+    
+          console.log("Deleted Beneficiary:", deletedBeneficiary);
+        } else {
+          console.log("Document or savedAccounts not found.");
+        }
       } catch (error) {
         console.error("Error deleting item:", error);
         // Handle the error as needed
       }
     });
+    
   });
 
   app.get("/paid", (req, res) => {
