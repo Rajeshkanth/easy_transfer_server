@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { default: mongoose } = require("mongoose");
 const { databaseConnection, collection } = require("./db");
 
 const express = require("express");
