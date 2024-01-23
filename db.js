@@ -7,29 +7,16 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    reqired: true,
+    required: true,
   },
-  userName: {
-    type: String,
-  },
-  age: {
-    type: Number,
-  },
-  dob: {
-    type: String,
-  },
-  accNum: {
-    type: Number,
-  },
-  card: {
-    type: Number,
-  },
-  cvv: {
-    type: Number,
-  },
-  expireDate: {
-    type: String,
-  },
+  userName: String,
+  age: Number,
+  dob: String,
+  accNum: Number,
+  card: Number,
+  cvv: Number,
+  expireDate: String,
+
   savedAccounts: [
     {
       beneficiaryName: {
@@ -54,14 +41,12 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
-// const savedAccountsSchema = new mongoose.Schema({});
-
-userSchema.pre("save", function (next) {
-  if (this.dob) {
-    this.dob.setUTCHours(0, 0, 0, 0);
-  }
-  next();
-});
+// userSchema.pre("save", function (next) {
+//   if (this.dob) {
+//     this.dob.setUTCHours(0, 0, 0, 0);
+//   }
+//   next();
+// });
 
 const collection = new mongoose.model("user", userSchema);
 // const accountCollection = new mongoose.model(

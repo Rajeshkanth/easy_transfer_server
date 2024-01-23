@@ -374,22 +374,20 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const userFound = await collection.findOne({ mobileNumber: num });
       if (userFound) {
         console.log("found from saving beneficiary", userFound);
-        // const updateDetails = await collection.updateOne(
-        //   {
-        //     mobileNumber: num,
-        //     "savedAccounts.beneficiaryName": { $exists: true },
-        //   },
-        //   {
-        //     $set: {
-        //       "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
-        //       "savedAccounts.$.accNum": SavedAccNum,
-        //       "savedAccounts.$.ifsc": SavedIfsc,
-        //       "savedAccounts.$.editable": editable,
-        //     },
-        //   }
-        // );
-        collection.savedAccounts = saveNewAccount;
-        collection.save();
+        const updateDetails = await collection.updateOne(
+          {
+            mobileNumber: num,
+            "savedAccounts.beneficiaryName": { $exists: true },
+          },
+          {
+            $set: {
+              "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
+              "savedAccounts.$.accNum": SavedAccNum,
+              "savedAccounts.$.ifsc": SavedIfsc,
+              "savedAccounts.$.editable": editable,
+            },
+          }
+        );
       }
     });
   });
