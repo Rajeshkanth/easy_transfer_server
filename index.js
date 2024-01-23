@@ -352,23 +352,13 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const regUser = await collection.findOne({ mobileNumber: num });
       console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
-        // regUser.savedAccounts.forEach((savedAccount) => {
-        //   io.emit("getSavedBeneficiary", {
-        //     beneficiaryName: savedAccount.beneficiaryName,
-        //     accNum: savedAccount.accNum,
-        //     ifsc: savedAccount.ifsc,
-        //     editable: savedAccount.editable,
-        //   });
-        // });
-
-        const lastSavedAccount =
-          regUser.savedAccounts[regUser.savedAccounts.length - 1];
-
-        io.emit("getSavedBeneficiary", {
-          beneficiaryName: lastSavedAccount.beneficiaryName,
-          accNum: lastSavedAccount.accNum,
-          ifsc: lastSavedAccount.ifsc,
-          editable: lastSavedAccount.editable,
+        regUser.savedAccounts.forEach((savedAccount) => {
+          io.emit("getSavedBeneficiary", {
+            beneficiaryName: savedAccount.beneficiaryName,
+            accNum: savedAccount.accNum,
+            ifsc: savedAccount.ifsc,
+            editable: savedAccount.editable,
+          });
         });
       }
     });
