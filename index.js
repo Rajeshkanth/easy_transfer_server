@@ -402,7 +402,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     
       try {
         // Assuming your collection is named "users"
-        const filter = { mobileNumber: document.cookie }; // Use the appropriate filter for your use case
+        const filter = { mobileNumber: data.num }; // Use the appropriate filter for your use case
     
         // Find the document that contains the accNumToDelete in the savedAccounts array
         const update = {
