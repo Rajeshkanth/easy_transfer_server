@@ -347,19 +347,67 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
-    socket.on("saveAccounts", async (data) => {
-      const { num } = data;
-      const regUser = await collection.findOne({ mobileNumber: num });
-      console.log("from save Acc ,", regUser);
-      if (regUser && regUser.savedAccounts.length > 0) {
-        regUser.savedAccounts.forEach((savedAccount) => {
-          io.emit("getSavedBeneficiary", {
-            beneficiaryName: savedAccount.beneficiaryName,
-            accNum: savedAccount.accNum,
-            ifsc: savedAccount.ifsc,
-            editable: savedAccount.editable,
-          });
-        });
+    // socket.on("saveAccounts", async (data) => {
+    //   const { num } = data;
+    //   const regUser = await collection.findOne({ mobileNumber: num });
+    //   console.log("from save Acc ,", regUser);
+    //   if (regUser && regUser.savedAccounts.length > 0) {
+    //     regUser.savedAccounts.forEach((savedAccount) => {
+    //       io.emit("getSavedBeneficiary", {
+    //         beneficiaryName: savedAccount.beneficiaryName,
+    //         accNum: savedAccount.accNum,
+    //         ifsc: savedAccount.ifsc,
+    //         editable: savedAccount.editable,
+    //       });
+    //     });
+    //   }
+    // });
+
+    socket.on("saveNewBeneficiary", async (data) => {
+      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
+        data;
+
+      const saveNewAccount = {
+        beneficiaryName: SavedBeneficiaryName,
+        accNum: SavedAccNum,
+        ifsc: SavedIfsc,
+        editable: editable,
+      };
+      const userFound = await collection.findOne({ mobileNumber: num });
+      if (userFound) {
+        console.log("found from saving beneficiary", userFound);
+        const initialSavedAccountsLength = userFound.savedAccounts.length;
+
+        const updateDetails = await collection.updateOne(
+          {
+            mobileNumber: num,
+          },
+          {
+            $push: {
+              savedAccounts: saveNewAccount,
+            },
+          }
+        );
+
+        if (updateDetails.modifiedCount > 0) {
+          console.log("New details added");
+
+          // Check if the length of savedAccounts has changed
+          const updatedUser = await collection.findOne({ mobileNumber: num });
+          const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
+
+          if (updatedSavedAccountsLength > initialSavedAccountsLength) {
+            // Emit getSavedBeneficiary event only when a new beneficiary is added
+            io.to(socket.id).emit("getSavedBeneficiary", {
+              beneficiaryName: SavedBeneficiaryName,
+              accNum: SavedAccNum,
+              ifsc: SavedIfsc,
+              editable: editable,
+            });
+          }
+        }
+      } else {
+        console.log("not added");
       }
     });
 
