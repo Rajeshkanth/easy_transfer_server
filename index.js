@@ -373,43 +373,101 @@ if (process.env.CONNECTION_METHOD === "socket") {
         ifsc: SavedIfsc,
         editable: editable,
       };
-      const userFound = await collection.findOne({ mobileNumber: num });
-      if (userFound) {
-        console.log("found from saving beneficiary", userFound);
-        const initialSavedAccountsLength = userFound.savedAccounts.length;
 
-        const updateDetails = await collection.updateOne(
-          {
-            mobileNumber: num,
-          },
-          {
-            $push: {
-              savedAccounts: saveNewAccount,
+      try {
+        const userFound = await collection.findOne({ mobileNumber: num });
+
+        if (userFound) {
+          console.log("found from saving beneficiary", userFound);
+          const initialSavedAccountsLength = userFound.savedAccounts.length;
+
+          const updateDetails = await collection.updateOne(
+            {
+              mobileNumber: num,
             },
+            {
+              $push: {
+                savedAccounts: saveNewAccount,
+              },
+            }
+          );
+
+          if (updateDetails.modifiedCount > 0) {
+            console.log("New details added");
+
+            // Check if the length of savedAccounts has changed
+            const updatedUser = await collection.findOne({ mobileNumber: num });
+            const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
+
+            if (updatedSavedAccountsLength > initialSavedAccountsLength) {
+              // Get the last added beneficiary
+              const lastAddedBeneficiary =
+                updatedUser.savedAccounts.slice(-1)[0];
+
+              // Emit details of the last added beneficiary
+              io.emit("getSavedBeneficiary", {
+                beneficiaryName: lastAddedBeneficiary.beneficiaryName,
+                accNum: lastAddedBeneficiary.accNum,
+                ifsc: lastAddedBeneficiary.ifsc,
+                editable: lastAddedBeneficiary.editable,
+              });
+            }
           }
-        );
-
-        if (updateDetails.modifiedCount > 0) {
-          console.log("New details added");
-
-          // Check if the length of savedAccounts has changed
-          const updatedUser = await collection.findOne({ mobileNumber: num });
-          const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
-
-          if (updatedSavedAccountsLength > initialSavedAccountsLength) {
-            // Emit getSavedBeneficiary event only when a new beneficiary is added
-            io.emit("getSavedBeneficiary", {
-              beneficiaryName: SavedBeneficiaryName,
-              accNum: SavedAccNum,
-              ifsc: SavedIfsc,
-              editable: editable,
-            });
-          }
+        } else {
+          console.log("User not found");
         }
-      } else {
-        console.log("not added");
+      } catch (error) {
+        console.error("Error saving new beneficiary:", error);
       }
     });
+
+    // socket.on("saveNewBeneficiary", async (data) => {
+    //   const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
+    //     data;
+
+    //   const saveNewAccount = {
+    //     beneficiaryName: SavedBeneficiaryName,
+    //     accNum: SavedAccNum,
+    //     ifsc: SavedIfsc,
+    //     editable: editable,
+    //   };
+    //   const userFound = await collection.findOne({ mobileNumber: num });
+    //   if (userFound) {
+    //     console.log("found from saving beneficiary", userFound);
+    //     const initialSavedAccountsLength = userFound.savedAccounts.length;
+
+    //     const updateDetails = await collection.updateOne(
+    //       {
+    //         mobileNumber: num,
+    //       },
+    //       {
+    //         $push: {
+    //           savedAccounts: saveNewAccount,
+    //         },
+    //       }
+    //     );
+
+    //     if (updateDetails.modifiedCount > 0) {
+    //       console.log("New details added");
+
+    //       // Check if the length of savedAccounts has changed
+    //       const updatedUser = await collection.findOne({ mobileNumber: num });
+    //       const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
+
+    //       if (updatedSavedAccountsLength > initialSavedAccountsLength) {
+    //         // Emit getSavedBeneficiary event only when a new beneficiary is added
+    //         io.emit("getSavedBeneficiary", {
+    //           beneficiaryName: SavedBeneficiaryName,
+    //           accNum: SavedAccNum,
+    //           ifsc: SavedIfsc,
+    //           editable: editable,
+    //         });
+    //       }
+    //     }
+    //   } else {
+    //     console.log("not added");
+    //   }
+    // });
 
     socket.on("deleteItem", async (data) => {
       const accNumToDelete = data.accNum;
