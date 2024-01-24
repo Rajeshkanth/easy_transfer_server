@@ -351,16 +351,16 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
       console.log("from save Acc ,", regUser);
-      if (regUser && regUser.savedAccounts.length > 0) {
-        regUser.savedAccounts.forEach((savedAccount) => {
-          io.emit("getSavedBeneficiary", {
-            beneficiaryName: savedAccount.beneficiaryName,
-            accNum: savedAccount.accNum,
-            ifsc: savedAccount.ifsc,
-            editable: savedAccount.editable,
-          });
-        });
-      }
+      // if (regUser && regUser.savedAccounts.length > 0) {
+      //   regUser.savedAccounts.forEach((savedAccount) => {
+      //     io.emit("getSavedBeneficiary", {
+      //       beneficiaryName: savedAccount.beneficiaryName,
+      //       accNum: savedAccount.accNum,
+      //       ifsc: savedAccount.ifsc,
+      //       editable: savedAccount.editable,
+      //     });
+      //   });
+      // }
     });
 
     socket.on("saveNewBeneficiary", async (data) => {
@@ -392,6 +392,16 @@ if (process.env.CONNECTION_METHOD === "socket") {
         );
         if (updateDetails.modifiedCount > 0) {
           console.log("New details added");
+          if (userFound.savedAccounts.length > 0) {
+            userFound.savedAccounts.forEach((savedAccount) => {
+              io.to(socket.id).emit("getSavedBeneficiary", {
+                beneficiaryName: savedAccount.beneficiaryName,
+                accNum: savedAccount.accNum,
+                ifsc: savedAccount.ifsc,
+                editable: savedAccount.editable,
+              });
+            });
+          }
         }
       } else {
         console.log("not added");
@@ -399,30 +409,30 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
     socket.on("deleteItem", async (data) => {
       const accNumToDelete = data.accNum;
-    
+
       try {
         // Assuming your collection is named "users"
         const filter = { mobileNumber: data.num }; // Use the appropriate filter for your use case
-    
+
         // Find the document that contains the accNumToDelete in the savedAccounts array
         const update = {
           $pull: {
             savedAccounts: { accNum: accNumToDelete },
           },
         };
-    
+
         // Use the findOneAndUpdate method to update and get the original document
         const result = await collection.findOneAndUpdate(filter, update, {
           returnDocument: "before", // "before" returns the document before the update
         });
-    
+
         // Check if the document and savedAccounts array exist
         if (result && result.value && result.value.savedAccounts) {
           // Access the deleted item
           const deletedBeneficiary = result.value.savedAccounts.find(
             (account) => account.accNum === accNumToDelete
           );
-    
+
           console.log("Deleted Beneficiary:", deletedBeneficiary);
         } else {
           console.log("Document or savedAccounts not found.");
@@ -432,7 +442,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
         // Handle the error as needed
       }
     });
-    
   });
 
   app.get("/paid", (req, res) => {
