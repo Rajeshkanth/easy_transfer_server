@@ -411,50 +411,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
-    socket.on("saveNewBeneficiary", async (data) => {
-      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
-        data;
-
-      const saveNewAccount = {
-        beneficiaryName: SavedBeneficiaryName,
-        accNum: SavedAccNum,
-        ifsc: SavedIfsc,
-        editable: editable,
-      };
-      const userFound = await collection.findOne({ mobileNumber: num });
-      if (userFound) {
-        console.log("found from saving beneficiary", userFound);
-        const updateDetails = await collection.updateOne(
-          {
-            mobileNumber: num,
-          },
-          {
-            $push: {
-              // "savedAccounts.$.beneficiaryName": SavedBeneficiaryName,
-              // "savedAccounts.$.accNum": SavedAccNum,
-              // "savedAccounts.$.ifsc": SavedIfsc,
-              // "savedAccounts.$.editable": editable,
-              savedAccounts: saveNewAccount,
-            },
-          }
-        );
-        if (updateDetails.modifiedCount > 0) {
-          console.log("New details added");
-          if (userFound.savedAccounts.length > 0) {
-            userFound.savedAccounts.forEach((savedAccount) => {
-              io.to(socket.id).emit("getSavedBeneficiary", {
-                beneficiaryName: savedAccount.beneficiaryName,
-                accNum: savedAccount.accNum,
-                ifsc: savedAccount.ifsc,
-                editable: savedAccount.editable,
-              });
-            });
-          }
-        }
-      } else {
-        console.log("not added");
-      }
-    });
     socket.on("deleteItem", async (data) => {
       const accNumToDelete = data.accNum;
 
