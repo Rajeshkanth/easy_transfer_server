@@ -347,7 +347,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
-    socket.on("saveAccounts", async (data) => {
+    socket.on("fetchList", async (data) => {
       const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
       console.log("from save Acc ,", regUser);
