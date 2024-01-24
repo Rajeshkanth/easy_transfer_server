@@ -353,7 +353,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
         regUser.savedAccounts.forEach((savedAccount) => {
-          io.emit("getSavedBeneficiary", {
+          io.emit("allSavedAccounts", {
             beneficiaryName: savedAccount.beneficiaryName,
             accNum: savedAccount.accNum,
             ifsc: savedAccount.ifsc,
