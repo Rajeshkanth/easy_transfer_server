@@ -398,7 +398,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
           if (updatedSavedAccountsLength > initialSavedAccountsLength) {
             // Emit getSavedBeneficiary event only when a new beneficiary is added
-            io.to(socket.id).emit("getSavedBeneficiary", {
+            io.emit("getSavedBeneficiary", {
               beneficiaryName: SavedBeneficiaryName,
               accNum: SavedAccNum,
               ifsc: SavedIfsc,
