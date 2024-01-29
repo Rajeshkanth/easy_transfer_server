@@ -378,7 +378,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
         const userFound = await collection.findOne({ mobileNumber: num });
 
         if (userFound) {
-          console.log("found from saving beneficiary", userFound);
           const initialSavedAccountsLength = userFound.savedAccounts.length;
 
           const updateDetails = await collection.updateOne(
@@ -400,11 +399,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
             const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
 
             if (updatedSavedAccountsLength > initialSavedAccountsLength) {
-              // Get the last added beneficiary
               const lastAddedBeneficiary =
                 updatedUser.savedAccounts.slice(-1)[0];
 
-              // Emit details of the last added beneficiary
               io.emit("getSavedBeneficiary", {
                 beneficiaryName: lastAddedBeneficiary.beneficiaryName,
                 accNum: lastAddedBeneficiary.accNum,
