@@ -307,8 +307,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
 
       collection.findOneAndUpdate(
-        { MobileNumber: number }, // Find the user with the matching tabId
-        { $set: { "Transactions.$.Status": "completed" } }, // Update the status to 'completed'
+        { MobileNumber: number },
+        { $set: { "Transactions.$.Status": "completed" } },
+        { new: true },
         (err, user) => {
           if (err) {
             console.error("Error updating transaction status:", err);
@@ -316,11 +317,13 @@ if (process.env.CONNECTION_METHOD === "socket") {
           }
           if (user) {
             console.log("Transaction status updated successfully:", user);
+
+            const lastTransaction =
+              user.Transactions[user.Transactions.length - 1];
+
+            io.emit("transactionDetails", { lastTransaction });
           } else {
-            console.log(
-              "No user found with the provided mobile number.",
-              number
-            );
+            console.log("No user found with the provided tabId.");
           }
         }
       );
