@@ -295,7 +295,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       console.log("room joined from success page", socketID);
     });
 
-    socket.on("clicked", (data) => {
+    socket.on("clicked", async (data) => {
       console.log("tab id", data.tabId);
       console.log(`payment confirmed by socket to ${data.tabId}`);
       const itemIndex = receivedPaymentAlerts.findIndex(
@@ -306,27 +306,23 @@ if (process.env.CONNECTION_METHOD === "socket") {
         receivedPaymentAlerts.splice(itemIndex, 1);
       }
 
-      collection.findOneAndUpdate(
+      const user = await collection.findOneAndUpdate(
         { MobileNumber: number },
         { $set: { "Transactions.$.Status": "completed" } },
-        { new: true },
-        (err, user) => {
-          if (err) {
-            console.error("Error updating transaction status:", err);
-            return;
-          }
-          if (user) {
-            console.log("Transaction status updated successfully:", user);
-
-            const lastTransaction =
-              user.Transactions[user.Transactions.length - 1];
-
-            io.emit("transactionDetails", { lastTransaction });
-          } else {
-            console.log("No user found with the provided tabId.");
-          }
-        }
+        { new: true }
       );
+
+      if (user) {
+        console.log("Transaction status updated successfully:", user);
+
+        // Get the details of the last transaction
+        const lastTransaction = user.Transactions[user.Transactions.length - 1];
+
+        // Emit the details of the last transaction back to the client
+        io.emit("transactionDetails", lastTransaction);
+      } else {
+        console.log("No user found with the provided tabId.");
+      }
 
       if (data.clicked) {
         io.to(data.tabId).emit("success", true);
