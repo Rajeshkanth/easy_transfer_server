@@ -200,6 +200,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
   var val = 0;
   const socketRooms = new Map();
   var number;
+  var Uid;
 
   io.on("connection", (socket) => {
     console.log(`user connected: ${val++} , ${socket.id}`);
@@ -245,8 +246,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
     socket.on("paymentPageConnected", async (data) => {
       let socketId;
-      const { num, NewTransactions } = data;
+      const { num, NewTransactions, Uid } = data;
       number = num;
+      Uid = Uid;
       const room = data.NewReceiver.tabId;
       console.log(data.NewReceiver);
       data.NewReceiver.socketRoom = socketId;
@@ -306,22 +308,29 @@ if (process.env.CONNECTION_METHOD === "socket") {
         receivedPaymentAlerts.splice(itemIndex, 1);
       }
 
-      const user = await collection.findOneAndUpdate(
-        { MobileNumber: number },
-        { $set: { "Transactions.$.Status": "completed" } },
-        { new: true }
-      );
+      const user = await collection.findOne({ mobileNumber: number });
 
       if (user) {
-        console.log("Transaction status updated successfully:", user);
+        const transactions = user.Transactions;
 
-        // Get the details of the last transaction
-        const lastTransaction = user.Transactions[user.Transactions.length - 1];
+        const transaction = transactions.find(
+          (transaction) => transaction.Uid === Uid
+        );
 
-        // Emit the details of the last transaction back to the client
-        io.emit("transactionDetails", lastTransaction);
+        if (transaction) {
+          transaction.Status = "completed";
+
+          await user.save();
+
+          console.log("Transaction status updated successfully.");
+
+          // Emit the updated transaction details back to the client
+          io.emit("transactionDetails", transaction);
+        } else {
+          console.log("No transaction found with the provided transactionId.");
+        }
       } else {
-        console.log("No user found with the provided number.", number);
+        console.log("No user found with the provided MobileNumber:", number);
       }
 
       if (data.clicked) {
@@ -352,7 +361,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           dob: numberFound.dob,
           accNum: numberFound.accNum,
         });
-        console.log(numberFound);
+        // console.log(numberFound);
       } else {
         io.emit("userNotFound");
         console.log("number not found in user name checking");
