@@ -246,9 +246,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
     socket.on("paymentPageConnected", async (data) => {
       let socketId;
-      const { num, NewTransactions, Uid } = data;
+      const { num, NewTransactions } = data;
       number = num;
-      uid = Uid;
+      uid = NewTransactions.Uid;
       const room = data.NewReceiver.tabId;
       console.log(data.NewReceiver);
       data.NewReceiver.socketRoom = socketId;
