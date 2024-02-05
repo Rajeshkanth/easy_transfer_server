@@ -321,7 +321,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         // Emit the details of the last transaction back to the client
         io.emit("transactionDetails", lastTransaction);
       } else {
-        console.log("No user found with the provided tabId.");
+        console.log("No user found with the provided number.", number);
       }
 
       if (data.clicked) {
@@ -398,7 +398,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("fetchList", async (data) => {
       const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
-      console.log("from save Acc ,", regUser);
+      // console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
         regUser.savedAccounts.forEach((savedAccount) => {
           io.emit("allSavedAccounts", {
