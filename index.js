@@ -200,7 +200,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
   var val = 0;
   const socketRooms = new Map();
   var number;
-  var Uid;
+  var uid;
 
   io.on("connection", (socket) => {
     console.log(`user connected: ${val++} , ${socket.id}`);
@@ -248,7 +248,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       let socketId;
       const { num, NewTransactions, Uid } = data;
       number = num;
-      Uid = Uid;
+      uid = Uid;
       const room = data.NewReceiver.tabId;
       console.log(data.NewReceiver);
       data.NewReceiver.socketRoom = socketId;
@@ -314,7 +314,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         const transactions = user.Transactions;
 
         const transaction = transactions.find(
-          (transaction) => transaction.Uid === Uid
+          (transaction) => transaction.Uid === uid
         );
 
         if (transaction) {
