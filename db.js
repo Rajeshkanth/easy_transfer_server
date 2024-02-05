@@ -39,6 +39,14 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  Transactions: [
+    {
+      Date: String,
+      Name: String,
+      Amount: Number,
+      Status: String,
+    },
+  ],
 });
 
 // userSchema.pre("save", function (next) {

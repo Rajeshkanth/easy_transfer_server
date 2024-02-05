@@ -199,6 +199,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
   var val = 0;
   const socketRooms = new Map();
+  var number;
 
   io.on("connection", (socket) => {
     console.log(`user connected: ${val++} , ${socket.id}`);
@@ -242,8 +243,10 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
-    socket.on("paymentPageConnected", (data) => {
+    socket.on("paymentPageConnected", async (data) => {
       let socketId;
+      const { num, NewTransactions } = data;
+      number = num;
       const room = data.NewReceiver.tabId;
       console.log(data.NewReceiver);
       data.NewReceiver.socketRoom = socketId;
@@ -257,6 +260,33 @@ if (process.env.CONNECTION_METHOD === "socket") {
         }
       }
       socket.join(room);
+
+      try {
+        const userFound = await collection.findOne({ mobileNumber: num });
+        if (userFound) {
+          const updateDetails = await collection.updateOne(
+            { mobileNumber: num },
+            { $push: { Transactions: NewTransactions } }
+          );
+
+          if (updateDetails.modifiedCount > 0) {
+            console.log("New details added");
+            // const updatedUser = await collection.findOne({
+            //   mobileNumber: num,
+            // });
+          }
+          io.emit("getLastTransactions", {
+            Date: NewTransactions.Date,
+            Amount: NewTransactions.Amount,
+            Description: NewTransactions.Description,
+            Status: NewTransactions.Status,
+          });
+        } else {
+          console.log("User not found");
+        }
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     socket.on("join_success_room", (data) => {
@@ -275,6 +305,25 @@ if (process.env.CONNECTION_METHOD === "socket") {
       if (itemIndex !== -1) {
         receivedPaymentAlerts.splice(itemIndex, 1);
       }
+
+      collection.findOneAndUpdate(
+        { MobileNumber: number }, // Find the user with the matching tabId
+        { $set: { "Transactions.$.Status": "completed" } }, // Update the status to 'completed'
+        (err, user) => {
+          if (err) {
+            console.error("Error updating transaction status:", err);
+            return;
+          }
+          if (user) {
+            console.log("Transaction status updated successfully:", user);
+          } else {
+            console.log(
+              "No user found with the provided mobile number.",
+              number
+            );
+          }
+        }
+      );
 
       if (data.clicked) {
         io.to(data.tabId).emit("success", true);
@@ -431,7 +480,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
         const userFound = await collection.findOne({ mobileNumber: num });
 
         if (userFound) {
-          // Check if the savedAccNum already exists for the user
           const existingBeneficiary = userFound.savedAccounts.find(
             (account) => account.accNum === SavedAccNum
           );
@@ -439,7 +487,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
             console.log(
               "Beneficiary with the same account number already exists for this user"
             );
-            // Handle the case where the beneficiary already exists
           } else {
             const updateDetails = await collection.updateOne(
               { mobileNumber: num },
@@ -479,10 +526,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const accNumToDelete = data.accNum;
 
       try {
-        // Assuming your collection is named "users"
-        const filter = { mobileNumber: data.num }; // Use the appropriate filter for your use case
-
-        // Find the document that contains the accNumToDelete in the savedAccounts array
+        const filter = { mobileNumber: data.num };
         const update = {
           $pull: {
             savedAccounts: { accNum: accNumToDelete },
