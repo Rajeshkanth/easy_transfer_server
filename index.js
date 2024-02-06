@@ -319,7 +319,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           (transaction) => transaction.Uid === uid
         );
 
-        if (transaction) {
+        if (transaction && data.clicked) {
           transaction.Status = "completed";
 
           await user.save();
