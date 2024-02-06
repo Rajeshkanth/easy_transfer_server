@@ -423,6 +423,23 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
+    socket.on("getTransactionDetails", async (data) => {
+      const { num } = data;
+      const regUser = await collection.findOne({ mobileNumber: num });
+      if (regUser && regUser.Transactions.length > 0) {
+        regUser.Transactions.forEach((transaction) => {
+          io.emit("transactionDetailsFromDb", {
+            Date: transaction.Date,
+            Name: transaction.Name,
+            Amount: transaction.Amount,
+            Status: transaction.Status,
+          });
+        });
+      } else {
+        console.log("no transact found");
+      }
+    });
+
     // socket.on("saveNewBeneficiary", async (data) => {
     //   const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
     //     data;
