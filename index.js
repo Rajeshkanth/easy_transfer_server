@@ -427,7 +427,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
       if (regUser && regUser.Transactions.length > 0) {
-        regUser.Transactions.slice(0, 6).forEach((transaction) => {
+        regUser.Transactions.forEach((transaction) => {
           io.emit("transactionDetailsFromDb", {
             Date: transaction.Date,
             Name: transaction.Name,
