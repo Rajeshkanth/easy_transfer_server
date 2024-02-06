@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
       Name: String,
       Amount: Number,
       Status: String,
-      Uid: Number,
+      Uid: String,
     },
   ],
 });
