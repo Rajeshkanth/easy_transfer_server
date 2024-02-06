@@ -327,7 +327,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           console.log("Transaction status updated successfully.");
 
           // Emit the updated transaction details back to the client
-          io.emit("transactionDetails", transaction);
+          await io.emit("transactionDetails", transaction);
         } else {
           console.log("No transaction found with the provided transactionId.");
         }
@@ -337,7 +337,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
       if (data.clicked) {
         console.log("from clicked event");
-        io.to(data.tabId).emit("success", true);
+        await io.to(data.tabId).emit("success", true);
       }
     });
 
