@@ -249,6 +249,8 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { num, NewTransactions } = data;
       number = num;
       uid = NewTransactions.Uid;
+      console.log(uid);
+      console.log(NewTransactions);
       const room = data.NewReceiver.tabId;
       console.log(data.NewReceiver);
       data.NewReceiver.socketRoom = socketId;
