@@ -307,29 +307,21 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const itemIndex = receivedPaymentAlerts.findIndex(
         (item) => item.tabId === data.tabId
       );
-
       if (itemIndex !== -1) {
         receivedPaymentAlerts.splice(itemIndex, 1);
       }
-
       const user = await collection.findOne({ mobileNumber: number });
-
       if (user) {
         const transactions = user.Transactions;
 
         const transaction = transactions.find(
           (transaction) => transaction.Uid === uid
         );
-
         if (transaction && data.clicked) {
           transaction.Status = "completed";
-
           await user.save();
-
           console.log("Transaction status updated successfully.");
-
-          // Emit the updated transaction details back to the client
-          await io.emit("transactionDetails", transaction);
+          io.emit("transactionDetails", transaction);
         } else {
           console.log("No transaction found with the provided transactionId.");
         }
@@ -339,11 +331,11 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
       if (data.clicked) {
         console.log("from clicked event");
-        await io.to(data.tabId).emit("success", true);
+        io.to(data.tabId).emit("success", true);
       }
     });
 
-    socket.on("canceled", (data) => {
+    socket.on("canceled", async (data) => {
       console.log(`payment canceled by socket ${data.tabId}`);
       const itemIndex = receivedPaymentAlerts.findIndex(
         (item) => item.tabId === data.tabId
@@ -351,6 +343,24 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
       if (itemIndex !== -1) {
         receivedPaymentAlerts.splice(itemIndex, 1);
+      }
+
+      const user = await collection.findOne({ mobileNumber: number });
+      if (user) {
+        const transactions = user.Transactions;
+        const transaction = transactions.find(
+          (transaction) => transaction.Uid === uid
+        );
+        if (transaction && data.cancel) {
+          transaction.Status = "canceled";
+          await user.save();
+          console.log("Transaction status updated successfully.");
+          io.emit("transactionDetails", transaction);
+        } else {
+          console.log("No transaction found with the provided transactionId.");
+        }
+      } else {
+        console.log("No user found with the provided MobileNumber:", number);
       }
       if (data.cancel) {
         io.to(data.tabId).emit("failed", true);
