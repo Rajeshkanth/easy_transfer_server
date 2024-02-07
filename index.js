@@ -508,7 +508,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("saveNewBeneficiary", async (data) => {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
         data;
-      console.log(savedAccNum);
+      console.log(SavedAccNum);
       const saveNewAccount = {
         beneficiaryName: SavedBeneficiaryName,
         accNum: SavedAccNum,
