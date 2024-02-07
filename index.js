@@ -519,7 +519,11 @@ if (process.env.CONNECTION_METHOD === "socket") {
       try {
         const userFound = await collection.findOne({ mobileNumber: num });
         console.log(
-          userFound.savedAccounts.find((acc) => acc.accNum === SavedAccNum)
+          userFound.find({
+            savedAccounts: {
+              $elemMatch: { accNum: SavedAccNum },
+            },
+          })
         );
 
         if (userFound) {
