@@ -520,20 +520,10 @@ if (process.env.CONNECTION_METHOD === "socket") {
         const userFound = await collection.findOne({ mobileNumber: num });
 
         if (userFound) {
-          // Check if the beneficiary with the same account number already exists
-
           console.log(parseInt(SavedAccNum));
-          // const existingBeneficiary = userFound.savedAccounts.find(
-          //   (account) => parseInt(account.accNum) === parseInt(SavedAccNum)
-          // );
-          // console.log(existingBeneficiary);
-          var existingBeneficiary;
-          userFound.savedAccounts.forEach((account) => {
-            if (account.accNum === SavedAccNum) {
-              existingBeneficiary = true;
-            }
-          });
-
+          const existingBeneficiary = userFound.savedAccounts.find(
+            (account) => account.accNum === parseInt(SavedAccNum)
+          );
           console.log(existingBeneficiary);
 
           if (existingBeneficiary) {
@@ -541,7 +531,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
               "Beneficiary with the same account number already exists for this user"
             );
           } else {
-            // If the beneficiary doesn't exist, proceed with saving
             const initialSavedAccountsLength = userFound.savedAccounts.length;
             const updateDetails = await collection.updateOne(
               { mobileNumber: num },
