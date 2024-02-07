@@ -508,7 +508,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("saveNewBeneficiary", async (data) => {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
         data;
-
+      console.log(savedAccNum);
       const saveNewAccount = {
         beneficiaryName: SavedBeneficiaryName,
         accNum: SavedAccNum,
@@ -519,7 +519,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       try {
         const userFound = await collection.findOne({ mobileNumber: num });
         console.log(
-          userFound.savedAccounts.find((acc) => acc.accNum === SavedAccNum)
+          userFound.savedAccounts.find((acc) => console.log(acc.accNum))
         );
 
         if (userFound) {
