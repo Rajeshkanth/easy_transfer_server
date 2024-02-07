@@ -508,7 +508,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("saveNewBeneficiary", async (data) => {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
         data;
-      console.log(SavedAccNum);
+      console.log(parseInt(SavedAccNum));
       const saveNewAccount = {
         beneficiaryName: SavedBeneficiaryName,
         accNum: SavedAccNum,
@@ -527,6 +527,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           //   (account) => parseInt(account.accNum) === parseInt(SavedAccNum)
           // );
           // console.log(existingBeneficiary);
+          var existingBeneficiary;
           userFound.savedAccounts.forEach((account) => {
             if (account.accNum === SavedAccNum) {
               existingBeneficiary = true;
