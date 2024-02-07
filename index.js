@@ -522,7 +522,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
         if (userFound) {
           console.log(parseInt(SavedAccNum));
           const existingBeneficiary = userFound.savedAccounts.find(
-            (account) => account.accNum === 1328457923857928
+            (account) => {
+              return account.accNum === SavedAccNum;
+            }
           );
           console.log(existingBeneficiary);
 
