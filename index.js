@@ -521,9 +521,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
         if (userFound) {
           // Check if the beneficiary with the same account number already exists
-          const existingBeneficiary = userFound.savedAccounts.$elemMatch({
-            accNum: SavedAccNum,
-          });
+          const existingBeneficiary = userFound.savedAccounts.find(
+            (account) => parseInt(account.accNum) === parseInt(SavedAccNum)
+          );
           console.log(existingBeneficiary);
 
           if (existingBeneficiary) {
