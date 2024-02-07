@@ -518,13 +518,14 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
       try {
         const userFound = await collection.findOne({ mobileNumber: num });
-        console.log(userFound.savedAccounts);
+        console.log(
+          userFound.savedAccounts.some((acc) => acc.accNum === SavedAccNum)
+        );
 
         if (userFound) {
           // Check if the beneficiary with the same account number already exists
-          const existingBeneficiary = userFound.savedAccounts.find(
+          const existingBeneficiary = userFound.savedAccounts.some(
             (account) => {
-              console.log(account);
               account.accNum === SavedAccNum;
             }
           );
