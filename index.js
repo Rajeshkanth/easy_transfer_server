@@ -528,6 +528,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
               "Beneficiary with the same account number already exists for this user"
             );
           } else {
+            const initialSavedAccountsLength = userFound.savedAccounts.length;
             const updateDetails = await collection.updateOne(
               { mobileNumber: num },
               { $push: { savedAccounts: saveNewAccount } }
