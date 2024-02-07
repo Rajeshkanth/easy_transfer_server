@@ -202,9 +202,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
   var number;
   var uid;
 
-  io.on("connection", (socket) => {
-    console.log(socket);
-    console.log(`user connected: ${val++} , ${socket.tabId}`);
+  io.on("connection", (data) => {
+    // console.log(socket);
+    console.log(`user connected: ${val++} , ${data.tabId}`);
 
     io.emit("connection_type", {
       type: "socket",
