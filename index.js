@@ -518,7 +518,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
       try {
         const userFound = await collection.findOne({ mobileNumber: num });
-        console.log(userFound);
+        console.log(userFound.savedAccounts);
 
         if (userFound) {
           // Check if the beneficiary with the same account number already exists
