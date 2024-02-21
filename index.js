@@ -266,33 +266,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
         }
       }
       socket.join(room);
-
-      try {
-        const userFound = await collection.findOne({ mobileNumber: num });
-        if (userFound) {
-          const updateDetails = await collection.updateOne(
-            { mobileNumber: num },
-            { $push: { Transactions: NewTransactions } }
-          );
-
-          if (updateDetails.modifiedCount > 0) {
-            console.log("New details added");
-            // const updatedUser = await collection.findOne({
-            //   mobileNumber: num,
-            // });
-          }
-          io.emit("getLastTransactions", {
-            Date: NewTransactions.Date,
-            Amount: NewTransactions.Amount,
-            Description: NewTransactions.Description,
-            Status: NewTransactions.Status,
-          });
-        } else {
-          console.log("User not found");
-        }
-      } catch (err) {
-        console.log(err);
-      }
     });
 
     socket.on("join_success_room", (data) => {
@@ -420,7 +393,8 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
 
     socket.on("fetchList", async (data) => {
-      const { num } = data;
+      const { num, sentTime } = data;
+      console.log("Event received at", sentTime);
       const regUser = await collection.findOne({ mobileNumber: num });
       // console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
@@ -434,6 +408,8 @@ if (process.env.CONNECTION_METHOD === "socket") {
         });
       }
     });
+
+    // for beneficiary page
 
     socket.on("getTransactionDetails", async (data) => {
       const { num } = data;
@@ -568,38 +544,16 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
 
-    socket.on("deleteItem", async (data) => {
-      const accNumToDelete = data.accNum;
+    // socket.on("getAllWhenRefresh", async (data) => {
+    //   const { num } = data;
+    //   const getDocument = await collection.findOne({ mobileNumber: num });
 
-      try {
-        const filter = { mobileNumber: data.num };
-        const update = {
-          $pull: {
-            savedAccounts: { accNum: accNumToDelete },
-          },
-        };
-
-        // Use the findOneAndUpdate method to update and get the original document
-        const result = await collection.findOneAndUpdate(filter, update, {
-          returnDocument: "before", // "before" returns the document before the update
-        });
-
-        // Check if the document and savedAccounts array exist
-        if (result && result.value && result.value.savedAccounts) {
-          // Access the deleted item
-          const deletedBeneficiary = result.value.savedAccounts.find(
-            (account) => account.accNum === accNumToDelete
-          );
-
-          console.log("Deleted Beneficiary:", deletedBeneficiary);
-        } else {
-          console.log("Document or savedAccounts not found.");
-        }
-      } catch (error) {
-        console.error("Error deleting item:", error);
-        // Handle the error as needed
-      }
-    });
+    //   if(getDocument){
+    //     io.emit("getAllWhenRefreshFromServer",{
+    //       recentTransactions=
+    //     })
+    //   }
+    // });
   });
 
   app.get("/paid", (req, res) => {
