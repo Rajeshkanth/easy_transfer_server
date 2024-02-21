@@ -14,7 +14,7 @@ app.use(
   })
 );
 
-function getCurrentTimeWithSeconds() {
+function currentTime() {
   const now = new Date();
   const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
   let hours = localTime.getHours();
