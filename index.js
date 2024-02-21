@@ -14,28 +14,6 @@ app.use(
   })
 );
 
-function currentTime() {
-  const now = new Date();
-  const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  let hours = localTime.getHours();
-  let minutes = localTime.getMinutes();
-  let seconds = localTime.getSeconds();
-  const ampm = hours >= 12 ? "PM" : "AM";
-
-  // Convert hours to 12-hour format
-  hours = hours % 12;
-  hours = hours ? hours : 12; // Handle midnight (0 hours)
-
-  // Add leading zero to minutes and seconds if necessary
-  minutes = minutes < 10 ? "0" + minutes : minutes;
-  seconds = seconds < 10 ? "0" + seconds : seconds;
-
-  // Construct the formatted time string
-  const currentTime = hours + ":" + minutes + ":" + seconds + " " + ampm;
-
-  return currentTime;
-}
-
 // Age: age,
 // DOB: dob,
 // AccNum: accNumber,
@@ -288,6 +266,32 @@ if (process.env.CONNECTION_METHOD === "socket") {
         }
       }
       socket.join(room);
+      try {
+        const userFound = await collection.findOne({ mobileNumber: num });
+        if (userFound) {
+          const updateDetails = await collection.updateOne(
+            { mobileNumber: num },
+            { $push: { Transactions: NewTransactions } }
+          );
+
+          if (updateDetails.modifiedCount > 0) {
+            console.log("New details added");
+            // const updatedUser = await collection.findOne({
+            //   mobileNumber: num,
+            // });
+          }
+          io.emit("getLastTransactions", {
+            Date: NewTransactions.Date,
+            Amount: NewTransactions.Amount,
+            Description: NewTransactions.Description,
+            Status: NewTransactions.Status,
+          });
+        } else {
+          console.log("User not found");
+        }
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     socket.on("join_success_room", (data) => {
@@ -363,7 +367,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
     socket.on("checkUserName", async (data) => {
       const number = data.regNumber;
-      console.log(currentTime(), "checkusername listener");
       const numberFound = await collection.findOne({ mobileNumber: number });
       if (numberFound) {
         io.emit("userNameAvailable", {
@@ -371,9 +374,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           age: numberFound.age,
           dob: numberFound.dob,
           accNum: numberFound.accNum,
-          receivingTime: currentTime(),
         });
-        console.log(currentTime(), "checkusername listener");
         // console.log(numberFound);
       } else {
         io.emit("userNotFound");
@@ -418,9 +419,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
 
     socket.on("fetchList", async (data) => {
-      const { num, sentTime } = data;
-      console.log("Event received at", sentTime);
+      const { num } = data;
       const regUser = await collection.findOne({ mobileNumber: num });
+      // console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
         regUser.savedAccounts.forEach((savedAccount) => {
           io.emit("allSavedAccounts", {
@@ -428,7 +429,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
             accNum: savedAccount.accNum,
             ifsc: savedAccount.ifsc,
             editable: savedAccount.editable,
-            receivingTime: currentTime(),
           });
         });
       }
@@ -452,6 +452,59 @@ if (process.env.CONNECTION_METHOD === "socket") {
         console.log("no transact found");
       }
     });
+
+    // socket.on("saveNewBeneficiary", async (data) => {
+    //   const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
+    //     data;
+
+    //   const saveNewAccount = {
+    //     beneficiaryName: SavedBeneficiaryName,
+    //     accNum: SavedAccNum,
+    //     ifsc: SavedIfsc,
+    //     editable: editable,
+    //   };
+
+    //   try {
+    //     const userFound = await collection.findOne({ mobileNumber: num });
+
+    //     if (userFound) {
+    //       const initialSavedAccountsLength = userFound.savedAccounts.length;
+
+    //       const updateDetails = await collection.updateOne(
+    //         {
+    //           mobileNumber: num,
+    //         },
+    //         {
+    //           $push: {
+    //             savedAccounts: saveNewAccount,
+    //           },
+    //         }
+    //       );
+
+    //       if (updateDetails.modifiedCount > 0) {
+    //         console.log("New details added");
+    //         const updatedUser = await collection.findOne({ mobileNumber: num });
+    //         const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
+
+    //         if (updatedSavedAccountsLength > initialSavedAccountsLength) {
+    //           const lastAddedBeneficiary =
+    //             updatedUser.savedAccounts.slice(-1)[0];
+
+    //           io.emit("getSavedBeneficiary", {
+    //             beneficiaryName: lastAddedBeneficiary.beneficiaryName,
+    //             accNum: lastAddedBeneficiary.accNum,
+    //             ifsc: lastAddedBeneficiary.ifsc,
+    //             editable: lastAddedBeneficiary.editable,
+    //           });
+    //         }
+    //       }
+    //     } else {
+    //       console.log("User not found");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error saving new beneficiary:", error);
+    //   }
+    // });
 
     socket.on("saveNewBeneficiary", async (data) => {
       const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
