@@ -14,17 +14,25 @@ app.use(
   })
 );
 
-function currentTime() {
+function getCurrentTimeWithSeconds() {
   const now = new Date();
-  let hours = now.getHours();
-  let minutes = now.getMinutes();
-  let seconds = now.getSeconds();
+  const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  let hours = localTime.getHours();
+  let minutes = localTime.getMinutes();
+  let seconds = localTime.getSeconds();
   const ampm = hours >= 12 ? "PM" : "AM";
+
+  // Convert hours to 12-hour format
   hours = hours % 12;
-  hours = hours ? hours : 12;
+  hours = hours ? hours : 12; // Handle midnight (0 hours)
+
+  // Add leading zero to minutes and seconds if necessary
   minutes = minutes < 10 ? "0" + minutes : minutes;
   seconds = seconds < 10 ? "0" + seconds : seconds;
+
+  // Construct the formatted time string
   const currentTime = hours + ":" + minutes + ":" + seconds + " " + ampm;
+
   return currentTime;
 }
 
@@ -413,7 +421,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { num, sentTime } = data;
       console.log("Event received at", sentTime);
       const regUser = await collection.findOne({ mobileNumber: num });
-      // console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
         regUser.savedAccounts.forEach((savedAccount) => {
           io.emit("allSavedAccounts", {
