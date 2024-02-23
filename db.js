@@ -65,7 +65,8 @@ const collection = new mongoose.model("user", userSchema);
 
 const databaseConnection = async () => {
   await mongoose
-    .connect(process.env.EASY_TRANSFER_DB)
+    // .connect(process.env.EASY_TRANSFER_DB)
+    .connect(process.env.EASY_TRANSFER_LOCAL_DB)
     .then(() => {
       console.log("Db is connected");
     })
