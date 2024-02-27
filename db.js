@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   userName: String,
   age: Number,
   dob: String,
-  accNum: Number,
+  accNum: String,
   card: Number,
   cvv: Number,
   expireDate: String,
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
         required: true,
       },
       accNum: {
-        type: Number,
+        type: String,
         required: true,
       },
       ifsc: {
@@ -50,18 +50,7 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
-// userSchema.pre("save", function (next) {
-//   if (this.dob) {
-//     this.dob.setUTCHours(0, 0, 0, 0);
-//   }
-//   next();
-// });
-
 const collection = new mongoose.model("user", userSchema);
-// const accountCollection = new mongoose.model(
-//   "userSaveAccounts",
-//   savedAccountsSchema
-// );
 
 const databaseConnection = async () => {
   await mongoose

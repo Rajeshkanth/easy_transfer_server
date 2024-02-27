@@ -76,8 +76,7 @@
       console.log("hello");
       console.log(tabId);
       const response = await axios.post(
-        `https://polling-server.onrender.com/confirm/${tabId}`,
-        // `http://localhost:8080/confirm/${tabId}`,
+        `http://localhost:8080/confirm/${tabId}`,
         {
           Action: action,
           index: index,
@@ -91,7 +90,7 @@
         window.location.href = "/canceled";
       }
     } catch (err) {
-      console.log(err);
+      console.log(err,"error occured");
     }
   };
 
@@ -106,9 +105,15 @@
   };
 
   // const socket = io.connect("https://polling-server.onrender.com");
-  const socket = io.connect("https://9fe2-14-194-29-26.ngrok-free.app ")
+  const socket = io.connect("https://a447-115-245-170-206.ngrok-free.app")
   const alertsData = [];
   let socketRoom;
+
+  socket.on('newAlert',(data)=>{
+    if(data.newOne){
+      window.location.reload();
+    }
+  })
 
   const confirmViaSocket = (index, tabId, socketRoom) => {
     socket.emit("clicked", {

@@ -33,34 +33,178 @@ const port = process.env.PORT;
 if (process.env.CONNECTION_METHOD === "polling") {
   app.use(bodyParser.json());
 
+  var number;
+  var uid;
+
   app.post("/connectionType", (req, res) => {
     res.status(201).send({ type: "polling" });
   });
 
   app.post("/fromPaymentAlert", async (req, res) => {
-    newRequest = req.body.data;
-    receivedPaymentAlerts.push(newRequest);
-    collection.insertMany([newRequest]);
-    console.log("saved");
-    res.status(200).send("received successfully");
-  });
+    const newRequest = req.body.data;
+    console.log(newRequest);
+    const { num, newTransaction } = req.body;
+    number = num;
 
-  app.post("/confirm/:tabId", (req, res) => {
+    uid = newTransaction.Uid;
+    receivedPaymentAlerts.push(newRequest);
+
+    try {
+      const userFound = await collection.findOne({ mobileNumber: num });
+      if (userFound) {
+        const updateDetails = await collection.updateOne(
+          { mobileNumber: num },
+          { $push: { Transactions: newTransaction } }
+        );
+
+        // app.post("/newAlerts", {
+        //   newAlert: true,
+        // });
+
+        if (updateDetails.modifiedCount > 0) {
+          console.log("New details added", newRequest);
+        }
+        res.status(200).send({
+          Date: newRequest.Date,
+          Amount: newRequest.Amount,
+          Description: newRequest.Description,
+          Status: newRequest.Status,
+        });
+      } else {
+        console.log("User not found");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    console.log("saved");
+  });
+  // app.post("/confirm/:tabId", (req, res) => {
+  //   console.log(req.params.tabId);
+  //   const tabId = req.params.tabId;
+  //   const action = req.body.Action;
+  //   if (action === "confirm") {
+  //     confirmationstatus[tabId] = "confirm";
+  //     console.log("confirmed");
+  //     receivedPaymentAlerts.splice(req.body.index, 1);
+  //     res.status(200).send();
+  //   } else if (action === "cancel") {
+  //     confirmationstatus[tabId] = "cancel";
+  //     console.log("canceled");
+  //     receivedPaymentAlerts.splice(req.body.index, 1);
+  //     res.status(201).send();
+  //   }
+  // });
+
+  app.post("/confirm/:tabId", async (req, res) => {
     console.log(req.params.tabId);
     const tabId = req.params.tabId;
     const action = req.body.Action;
+
     if (action === "confirm") {
-      confirmationstatus[tabId] = "confirm";
-      console.log("confirmed");
-      receivedPaymentAlerts.splice(req.body.index, 1);
-      res.status(200).send();
+      // Update transaction status in the database
+      const user = await collection.findOne({ mobileNumber: number });
+
+      if (user) {
+        const transactions = user.Transactions;
+        console.log(transactions);
+        const transaction = transactions.find(
+          (transaction) => transaction.Uid === uid
+        );
+        console.log(transaction, uid);
+        if (transaction && action) {
+          transaction.Status = "completed";
+          await user.save();
+          confirmationstatus[tabId] = "confirm";
+          receivedPaymentAlerts.splice(req.body.index, 1);
+          console.log("Transaction status updated successfully.");
+          res.status(200).send();
+        } else {
+          console.log("No transaction found");
+        }
+      } else {
+        console.log("No user found with the number", number);
+      }
+
+      // collection
+      //   .updateOne(
+      //     { mobileNumber: number },
+      //     { $set: { "Transactions.$.status": "confirmed" } }
+      //   )
+      //   .then((result) => {
+      //     console.log("Transaction confirmed");
+      //     confirmationstatus[tabId] = "confirm";
+      //     receivedPaymentAlerts.splice(req.body.index, 1);
+      //     res.status(200).send();
+      //   })
+      //   .catch((err) => {
+      //     console.error("Error updating transaction status:", err);
+      //     res.status(500).send("Internal Server Error");
+      //   });
     } else if (action === "cancel") {
-      confirmationstatus[tabId] = "cancel";
-      console.log("canceled");
-      receivedPaymentAlerts.splice(req.body.index, 1);
-      res.status(201).send();
+      // Update transaction status in the database
+      collection
+        .updateOne(
+          { mobileNumber: number },
+          { $set: { "Transactions.$.status": "canceled" } }
+        )
+        .then((result) => {
+          confirmationstatus[tabId] = "cancel";
+
+          res.status(201).send();
+          receivedPaymentAlerts.splice(req.body.index, 1);
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).send("Internal Server Error");
+        });
     }
   });
+  // app.post("/confirm/:tabId", async (req, res) => {
+  //   const tabId = req.params.tabId;
+  //   const action = req.body.Action;
+
+  //   try {
+  //     const itemIndex = receivedPaymentAlerts.findIndex(
+  //       (item) => item.tabId === tabId
+  //     );
+
+  //     if (itemIndex !== -1) {
+  //       receivedPaymentAlerts.splice(itemIndex, 1);
+
+  //       const user = await collection.findOne({ mobileNumber: number });
+
+  //       if (user) {
+  //         const transactions = user.Transactions;
+  //         const transaction = transactions.find(
+  //           (transaction) => transaction.Uid === req.body.uid
+  //         );
+
+  //         if (transaction && action) {
+  //           transaction.Status = "completed";
+  //           await user.save();
+  //           console.log("Transaction status updated successfully.");
+  //           res.status(200).send("Transaction confirmed successfully.");
+  //         } else {
+  //           console.log(
+  //             "No transaction found with the provided transactionId."
+  //           );
+  //           res.status(404).send("No transaction found.");
+  //         }
+  //       } else {
+  //         console.log("No user found with the provided MobileNumber:", number);
+  //         res.status(404).send("No user found.");
+  //       }
+  //     } else {
+  //       console.log("No payment alert found for the provided tabId:", tabId);
+  //       res.status(404).send("No payment alert found.");
+  //     }
+  //   } catch (err) {
+  //     console.error("Error updating transaction status:", err);
+  //     res.status(500).send("Internal Server Error");
+  //   }
+  // });
+
   app.post("/success/:tabId", (req, res) => {
     const tabId = req.params.tabId;
     if (confirmationstatus[tabId] === "confirm") {
@@ -158,6 +302,220 @@ if (process.env.CONNECTION_METHOD === "polling") {
       console.log("number not found in user name checking");
     }
   });
+
+  app.post("/saveNewBeneficiary", async (req, res) => {
+    try {
+      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
+        req.body;
+      console.log(parseInt(SavedAccNum));
+      const saveNewAccount = {
+        beneficiaryName: SavedBeneficiaryName,
+        accNum: SavedAccNum,
+        ifsc: SavedIfsc,
+        editable: editable,
+      };
+
+      const userFound = await collection.findOne({ mobileNumber: num });
+
+      if (userFound) {
+        console.log(parseInt(SavedAccNum));
+        const existingBeneficiary = userFound.savedAccounts.find((account) => {
+          return account.accNum === parseInt(SavedAccNum);
+        });
+        console.log(existingBeneficiary);
+
+        if (existingBeneficiary) {
+          console.log(
+            "Beneficiary with the same account number already exists for this user"
+          );
+          res
+            .status(409)
+            .send(
+              "Beneficiary with the same account number already exists for this user"
+            );
+        } else {
+          const initialSavedAccountsLength = userFound.savedAccounts.length;
+          const updateDetails = await collection.updateOne(
+            { mobileNumber: num },
+            { $push: { savedAccounts: saveNewAccount } }
+          );
+
+          if (updateDetails.modifiedCount > 0) {
+            console.log("New details added");
+            const updatedUser = await collection.findOne({ mobileNumber: num });
+            const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
+
+            if (updatedSavedAccountsLength > initialSavedAccountsLength) {
+              const lastAddedBeneficiary =
+                updatedUser.savedAccounts.slice(-1)[0];
+              res.status(200).json({
+                beneficiaryName: lastAddedBeneficiary.beneficiaryName,
+                accNum: lastAddedBeneficiary.accNum,
+                ifsc: lastAddedBeneficiary.ifsc,
+              });
+            }
+          }
+        }
+      } else {
+        console.log("User not found");
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      console.error("Error saving new beneficiary:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+  app.post("/getBeneficiaryDetails", async (req, res) => {
+    try {
+      const { num } = req.body;
+
+      const regUser = await collection.findOne({ mobileNumber: num });
+
+      if (regUser && regUser.savedAccounts.length > 0) {
+        const beneficiaryDetails = regUser.savedAccounts.map(
+          (savedAccount) => ({
+            beneficiaryName: savedAccount.beneficiaryName,
+            accNum: savedAccount.accNum,
+            ifsc: savedAccount.ifsc,
+            editable: savedAccount.editable,
+          })
+        );
+
+        res.status(200).json(beneficiaryDetails);
+      } else {
+        res.status(404).send("No beneficiary details found.");
+      }
+    } catch (error) {
+      console.error("Error fetching beneficiary details:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+  app.post("/getSavedAccountsForProfile", async (req, res) => {
+    try {
+      const { num } = req.body;
+      const regUser = await collection.findOne({ mobileNumber: num });
+      if (regUser && regUser.savedAccounts.length > 0) {
+        const beneficiaryDetails = regUser.savedAccounts.map(
+          (savedAccount) => ({
+            Name: savedAccount.beneficiaryName,
+            Account: savedAccount.accNum,
+          })
+        );
+        res.status(200).json(beneficiaryDetails);
+      } else {
+        res.status(404).send("No beneficiary details found.");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+  app.post("/getSavedTransactionsForProfile", async (req, res) => {
+    try {
+      const { num } = req.body;
+      const regUser = await collection.findOne({ mobileNumber: num });
+      if (regUser && regUser.Transactions.length > 0) {
+        const transactionDetails = regUser.Transactions.map((transaction) => ({
+          Date: transaction.Date,
+          Name: transaction.Name,
+          Status: transaction.Status,
+          Amount: transaction.Amount,
+        }));
+        res.status(200).json({
+          transactions: transactionDetails,
+          count: transactionDetails.length,
+        });
+      } else {
+        res.status(404).send("No transaction details found.");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  app.post("/transactionDetailsForTransactionPage", async (req, res) => {
+    try {
+      const { num } = req.body;
+      const regUser = await collection.findOne({ mobileNumber: num });
+      if (regUser && regUser.Transactions.length > 0) {
+        const transactionDetails = regUser.Transactions.map((transaction) => ({
+          Date: transaction.Date,
+          Name: transaction.Name,
+          Status: transaction.Status,
+          Amount: transaction.Amount,
+        }));
+        res.status(200).json(transactionDetails);
+      } else {
+        res.status(404).send("No transaction details found.");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  // app.post("/saveNewBeneficiary", async (req, res) => {
+  //   const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
+  //     req.body;
+  //   console.log(parseInt(SavedAccNum));
+  //   const saveNewAccount = {
+  //     beneficiaryName: SavedBeneficiaryName,
+  //     accNum: SavedAccNum,
+  //     ifsc: SavedIfsc,
+  //     editable: editable,
+  //   };
+  //   try {
+  //     const userFound = await collection.findOne({ mobileNumber: num });
+
+  //     if (userFound) {
+  //       console.log(parseInt(SavedAccNum));
+  //       const existingBeneficiary = userFound.savedAccounts.find((account) => {
+  //         return account.accNum === parseInt(SavedAccNum);
+  //       });
+  //       console.log(existingBeneficiary);
+
+  //       if (existingBeneficiary) {
+  //         console.log(
+  //           "Beneficiary with the same account number already exists for this user"
+  //         );
+  //       } else {
+  //         const initialSavedAccountsLength = userFound.savedAccounts.length;
+  //         const updateDetails = await collection.updateOne(
+  //           { mobileNumber: num },
+  //           { $push: { savedAccounts: saveNewAccount } }
+  //         );
+
+  //         if (updateDetails.modifiedCount > 0) {
+  //           console.log("New details added");
+  //           const updatedUser = await collection.findOne({
+  //             mobileNumber: num,
+  //           });
+  //           const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
+
+  //           if (updatedSavedAccountsLength > initialSavedAccountsLength) {
+  //             const lastAddedBeneficiary =
+  //               updatedUser.savedAccounts.slice(-1)[0];
+  //             console.log(lastAddedBeneficiary);
+
+  //             res.status(200).send({
+  //               beneficiaryName: lastAddedBeneficiary.beneficiaryName,
+  //               accNum: lastAddedBeneficiary.accNum,
+  //               ifsc: lastAddedBeneficiary.ifsc,
+
+  //               // beneficiaryName: lastAddedBeneficiary.beneficiaryName,
+  //               // accNum: lastAddedBeneficiary.accNum,
+  //               // ifsc: lastAddedBeneficiary.ifsc,
+  //             });
+  //           }
+  //         }
+  //       }
+  //     } else {
+  //       console.log("User not found");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error saving new beneficiary:", error);
+  //   }
+  // });
 
   //////////////////////////////////////////////
 
@@ -274,11 +632,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
             { $push: { Transactions: NewTransactions } }
           );
 
+          io.emit("newAlert", {
+            newOne: true,
+          });
+
           if (updateDetails.modifiedCount > 0) {
             console.log("New details added");
-            // const updatedUser = await collection.findOne({
-            //   mobileNumber: num,
-            // });
           }
           io.emit("getLastTransactions", {
             Date: NewTransactions.Date,
@@ -549,17 +908,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
         console.error("Error saving new beneficiary:", error);
       }
     });
-
-    // socket.on("getAllWhenRefresh", async (data) => {
-    //   const { num } = data;
-    //   const getDocument = await collection.findOne({ mobileNumber: num });
-
-    //   if(getDocument){
-    //     io.emit("getAllWhenRefreshFromServer",{
-    //       recentTransactions=
-    //     })
-    //   }
-    // });
   });
 
   app.get("/paid", (req, res) => {
