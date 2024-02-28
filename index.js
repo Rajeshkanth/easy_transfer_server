@@ -14,18 +14,6 @@ app.use(
   })
 );
 
-// Age: age,
-// DOB: dob,
-// AccNum: accNumber,
-// Card: card,
-// CVV: cvv,
-// ExpireDate: expireDate,
-
-// const data = {
-//   mobileNumber: 99426,
-//   password: 123,
-// };
-
 const receivedPaymentAlerts = [];
 const confirmationstatus = {};
 const port = process.env.PORT;
@@ -35,6 +23,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
   var number;
   var uid;
+  var newAlertReceived = false;
 
   app.post("/connectionType", (req, res) => {
     res.status(201).send({ type: "polling" });
@@ -42,10 +31,10 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
   app.post("/fromPaymentAlert", async (req, res) => {
     const newRequest = req.body.data;
-    console.log(newRequest);
+
     const { num, newTransaction } = req.body;
     number = num;
-
+    newAlertReceived = true;
     uid = newTransaction.Uid;
     receivedPaymentAlerts.push(newRequest);
 
@@ -56,10 +45,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
           { mobileNumber: num },
           { $push: { Transactions: newTransaction } }
         );
-
-        // app.post("/newAlerts", {
-        //   newAlert: true,
-        // });
 
         if (updateDetails.modifiedCount > 0) {
           console.log("New details added", newRequest);
@@ -79,22 +64,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
     console.log("saved");
   });
-  // app.post("/confirm/:tabId", (req, res) => {
-  //   console.log(req.params.tabId);
-  //   const tabId = req.params.tabId;
-  //   const action = req.body.Action;
-  //   if (action === "confirm") {
-  //     confirmationstatus[tabId] = "confirm";
-  //     console.log("confirmed");
-  //     receivedPaymentAlerts.splice(req.body.index, 1);
-  //     res.status(200).send();
-  //   } else if (action === "cancel") {
-  //     confirmationstatus[tabId] = "cancel";
-  //     console.log("canceled");
-  //     receivedPaymentAlerts.splice(req.body.index, 1);
-  //     res.status(201).send();
-  //   }
-  // });
+
+  app.post("/CheckForNewAlert", async (req, res) => {
+    if (newAlertReceived) {
+      newAlertReceived = false;
+      res.status(200).send();
+    } else {
+      res.status(201).send();
+    }
+  });
 
   app.post("/confirm/:tabId", async (req, res) => {
     console.log(req.params.tabId);
@@ -102,16 +80,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
     const action = req.body.Action;
 
     if (action === "confirm") {
-      // Update transaction status in the database
       const user = await collection.findOne({ mobileNumber: number });
 
       if (user) {
         const transactions = user.Transactions;
-        console.log(transactions);
+
         const transaction = transactions.find(
           (transaction) => transaction.Uid === uid
         );
-        console.log(transaction, uid);
+
         if (transaction && action) {
           transaction.Status = "completed";
           await user.save();
@@ -125,85 +102,31 @@ if (process.env.CONNECTION_METHOD === "polling") {
       } else {
         console.log("No user found with the number", number);
       }
-
-      // collection
-      //   .updateOne(
-      //     { mobileNumber: number },
-      //     { $set: { "Transactions.$.status": "confirmed" } }
-      //   )
-      //   .then((result) => {
-      //     console.log("Transaction confirmed");
-      //     confirmationstatus[tabId] = "confirm";
-      //     receivedPaymentAlerts.splice(req.body.index, 1);
-      //     res.status(200).send();
-      //   })
-      //   .catch((err) => {
-      //     console.error("Error updating transaction status:", err);
-      //     res.status(500).send("Internal Server Error");
-      //   });
     } else if (action === "cancel") {
-      // Update transaction status in the database
-      collection
-        .updateOne(
-          { mobileNumber: number },
-          { $set: { "Transactions.$.status": "canceled" } }
-        )
-        .then((result) => {
-          confirmationstatus[tabId] = "cancel";
+      const user = await collection.findOne({ mobileNumber: number });
+      newAlert = false;
+      if (user) {
+        const transactions = user.Transactions;
 
-          res.status(201).send();
+        const transaction = transactions.find(
+          (transaction) => transaction.Uid === uid
+        );
+        console.log(transaction, uid);
+        if (transaction && action) {
+          transaction.Status = "canceled";
+          await user.save();
+          confirmationstatus[tabId] = "cancel";
           receivedPaymentAlerts.splice(req.body.index, 1);
-        })
-        .catch((err) => {
-          console.log(err);
-          res.status(500).send("Internal Server Error");
-        });
+          console.log("Transaction status updated successfully.");
+          res.status(201).send();
+        } else {
+          console.log("No transaction found");
+        }
+      } else {
+        console.log("No user found with the number", number);
+      }
     }
   });
-  // app.post("/confirm/:tabId", async (req, res) => {
-  //   const tabId = req.params.tabId;
-  //   const action = req.body.Action;
-
-  //   try {
-  //     const itemIndex = receivedPaymentAlerts.findIndex(
-  //       (item) => item.tabId === tabId
-  //     );
-
-  //     if (itemIndex !== -1) {
-  //       receivedPaymentAlerts.splice(itemIndex, 1);
-
-  //       const user = await collection.findOne({ mobileNumber: number });
-
-  //       if (user) {
-  //         const transactions = user.Transactions;
-  //         const transaction = transactions.find(
-  //           (transaction) => transaction.Uid === req.body.uid
-  //         );
-
-  //         if (transaction && action) {
-  //           transaction.Status = "completed";
-  //           await user.save();
-  //           console.log("Transaction status updated successfully.");
-  //           res.status(200).send("Transaction confirmed successfully.");
-  //         } else {
-  //           console.log(
-  //             "No transaction found with the provided transactionId."
-  //           );
-  //           res.status(404).send("No transaction found.");
-  //         }
-  //       } else {
-  //         console.log("No user found with the provided MobileNumber:", number);
-  //         res.status(404).send("No user found.");
-  //       }
-  //     } else {
-  //       console.log("No payment alert found for the provided tabId:", tabId);
-  //       res.status(404).send("No payment alert found.");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error updating transaction status:", err);
-  //     res.status(500).send("Internal Server Error");
-  //   }
-  // });
 
   app.post("/success/:tabId", (req, res) => {
     const tabId = req.params.tabId;
@@ -275,9 +198,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
         }
       );
       if (updateResult.modifiedCount > 0) {
-        res
-          .status(200)
-          .send({ userName: name, age: Age, dob: DOB, accNum: AccNum });
+        res.status(200).send({
+          userName: name,
+          age: Age,
+          dob: DOB,
+          accNum: AccNum,
+          card: Card,
+          cvv: CVV,
+          expireDate: ExpireDate,
+        });
         console.log("Name updated");
       }
     } else {
@@ -296,6 +225,9 @@ if (process.env.CONNECTION_METHOD === "polling") {
         age: numberFound.age,
         dob: numberFound.dob,
         accNum: numberFound.accNum,
+        card: numberFound.card,
+        cvv: numberFound.cvv,
+        expireDate: numberFound.expireDate,
       });
       console.log(numberFound);
     } else {
@@ -454,69 +386,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
     }
   });
 
-  // app.post("/saveNewBeneficiary", async (req, res) => {
-  //   const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, editable, num } =
-  //     req.body;
-  //   console.log(parseInt(SavedAccNum));
-  //   const saveNewAccount = {
-  //     beneficiaryName: SavedBeneficiaryName,
-  //     accNum: SavedAccNum,
-  //     ifsc: SavedIfsc,
-  //     editable: editable,
-  //   };
-  //   try {
-  //     const userFound = await collection.findOne({ mobileNumber: num });
-
-  //     if (userFound) {
-  //       console.log(parseInt(SavedAccNum));
-  //       const existingBeneficiary = userFound.savedAccounts.find((account) => {
-  //         return account.accNum === parseInt(SavedAccNum);
-  //       });
-  //       console.log(existingBeneficiary);
-
-  //       if (existingBeneficiary) {
-  //         console.log(
-  //           "Beneficiary with the same account number already exists for this user"
-  //         );
-  //       } else {
-  //         const initialSavedAccountsLength = userFound.savedAccounts.length;
-  //         const updateDetails = await collection.updateOne(
-  //           { mobileNumber: num },
-  //           { $push: { savedAccounts: saveNewAccount } }
-  //         );
-
-  //         if (updateDetails.modifiedCount > 0) {
-  //           console.log("New details added");
-  //           const updatedUser = await collection.findOne({
-  //             mobileNumber: num,
-  //           });
-  //           const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
-
-  //           if (updatedSavedAccountsLength > initialSavedAccountsLength) {
-  //             const lastAddedBeneficiary =
-  //               updatedUser.savedAccounts.slice(-1)[0];
-  //             console.log(lastAddedBeneficiary);
-
-  //             res.status(200).send({
-  //               beneficiaryName: lastAddedBeneficiary.beneficiaryName,
-  //               accNum: lastAddedBeneficiary.accNum,
-  //               ifsc: lastAddedBeneficiary.ifsc,
-
-  //               // beneficiaryName: lastAddedBeneficiary.beneficiaryName,
-  //               // accNum: lastAddedBeneficiary.accNum,
-  //               // ifsc: lastAddedBeneficiary.ifsc,
-  //             });
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       console.log("User not found");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error saving new beneficiary:", error);
-  //   }
-  // });
-
   //////////////////////////////////////////////
 
   app.get("/paid", (req, res) => {
@@ -561,7 +430,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
   var uid;
 
   io.on("connection", (socket) => {
-    // console.log(socket);
     const tabId = socket.handshake.query.tabId;
     console.log(`user connected: ${val++} , ${tabId}`);
 
@@ -587,9 +455,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
 
     socket.on("login", async (data) => {
       const { Mobile, Password } = data;
-
       const newUser = await collection.findOne({ mobileNumber: Mobile });
-
       if (newUser) {
         if (newUser.password === Password) {
           io.emit("loginSuccess");
@@ -733,8 +599,10 @@ if (process.env.CONNECTION_METHOD === "socket") {
           age: numberFound.age,
           dob: numberFound.dob,
           accNum: numberFound.accNum,
+          card: numberFound.card,
+          cvv: numberFound.cvv,
+          expireDate: numberFound.expireDate,
         });
-        // console.log(numberFound);
       } else {
         io.emit("userNotFound");
         console.log("number not found in user name checking");
@@ -747,7 +615,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
       console.log("from profile");
 
       if (numberFound) {
-        // res.status(200).send();
         console.log("Number found");
         const updateResult = await collection.updateOne(
           { mobileNumber: num },
@@ -781,7 +648,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const { num, emit } = data;
       console.log(emit);
       const regUser = await collection.findOne({ mobileNumber: num });
-      // console.log("from save Acc ,", regUser);
       if (regUser && regUser.savedAccounts.length > 0) {
         regUser.savedAccounts.forEach((savedAccount) => {
           io.emit("allSavedAccounts", {
@@ -925,7 +791,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
   });
 
-  // const port = process.env.PORT;
   databaseConnection();
 
   server.listen(port, () => {
