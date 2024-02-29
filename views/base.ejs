@@ -1,71 +1,52 @@
 <%-include("header")-%>
 
-<div class="header">
-  <h1 style="margin: 0; z-index: 10">Transaction Alerts</h1>
+
+<div
+  class="header min-h-10 p-3  font-poppins font-bold flex items-center text-left w-screen bg-gray-300 fixed top-0 text-black"
+>
+  <h1 class="m-0 z-10">Transaction Alerts</h1>
 </div>
 
 <div
-  class="form-container"
+  class="form-container  mt-12"
   style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
 >
   <% AlertValue.forEach((alert, index) =>{ %>
 
   <div
     key="<%=index%>"
-    style="
-      margin: 10px;
-      border-bottom: 1px solid gray;
-      font-family: 'poppins' open sans;
-    "
+    class="transfer-details-container p-2 border-b border-gray-400 pl-2"
   >
-    <h5 style="margin-left: 2rem; margin: 0; margin-bottom: 0.4rem">
-      Transfer Details
-    </h5>
-    <div style="display: flex; justify-content: space-between">
-      <h5 style="margin: 0.4rem; margin-top: 10px; color: grey">Recipient</h5>
-      <h4 style="margin: 0.4rem; margin-top: 10px"><%=alert.AccHolder%></h4>
+    <h5 class="transfer-text m-0 mb-1">Transfer Details</h5>
+    <div class="container flex justify-between items-center">
+      <h5 class="m-1 mt-1 text-gray-600 ">Recipient</h5>
+      <h4 class="m-1 mt-1 font-bold "><%=alert.AccHolder%></h4>
     </div>
-    <div style="display: flex; justify-content: space-between">
-      <h5 style="margin: 0.4rem; color: grey">Account Number</h5>
-      <h4 style="margin: 0.4rem"><%=alert.AccNum%></h4>
+    <div class="container flex justify-between items-center">
+      <h5  class="m-1 mt-1 text-gray-600 ">Account Number</h5>
+      <h4 class="m-1 mt-1 font-bold "><%=alert.AccNum%></h4>
     </div>
-    <div style="display: flex; justify-content: space-between">
-      <h5 style="margin: 0.4rem; color: grey">IFSC Code</h5>
-      <h4 style="margin: 0.4rem"><%=alert.Ifsc%></h4>
+    <div class="container flex justify-between">
+      <h5 class="m-1 mt-1 text-gray-600 ">IFSC Code</h5>
+      <h4 class="m-1 mt-1 font-bold "><%=alert.Ifsc%></h4>
     </div>
-    <div
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: center;
-      "
-    >
-      <h5
-        style="text-align: center; margin: 0; margin-left: 0.4rem; color: grey"
-      >
-        Sending Amount
-      </h5>
-      <br />
-      <h1 style="margin: 0"><%=alert.Amount%></h1>
+    <div class="container amount-container flex justify-between text-center items-center">
+      <h5 class="m-1 mt-1 text-gray-600 ">Sending Amount</h5>
+      
+      <h1 class="m-1 mt-1 font-bold  text-xl"><%=alert.Amount%></h1>
     </div>
   </div>
 
-  <div
-    style="
-      display: flex;
-      justify-content: space-around;
-      border-bottom: 2px solid grey;
-    "
-  >
+  <div class="btn-container flex justify-around border-b border-gray-400">
+   
     <button
-      class="button-17"
+      class="button confirm bg-green-500 hover:bg-green-400 w-2/5 border border-green-600 inline-flex items-center appearance-none rounded-full border-none shadow-md cursor-pointer font-bold text-sm h-10 justify-center tracking-tighter leading-normal max-w-full overflow-visible px-5 py-1 relative text-center transition duration-300 ease-in-out select-none w-45 mt-3 mb-4"
       onclick="<%= alert.type === 'socket' ? 'confirmViaSocket(\'' + index + '\', \'' + alert.tabId + '\',\''+alert.socketRoom + '\')' : 'confirm(\'' + index + '\', \'' + alert.tabId + '\')' %>"
     >
       Confirm
     </button>
     <button
-      class="button-17"
+      class="button cancel  bg-red-500 hover:bg-red-400 w-2/5 border border-red-600 inline-flex items-center appearance-none rounded-full border-none shadow-md cursor-pointer font-bold text-sm h-10 justify-center tracking-tighter leading-normal max-w-full overflow-visible px-5 py-1 relative text-center transition duration-300 ease-in-out select-none w-45 mt-3 mb-4""
       onclick="<%= alert.type === 'socket' ? 'cancelViaSocket(\'' + index + '\', \'' + alert.tabId + '\',\''+alert.socketRoom + '\')' : 'cancel(\'' + index + '\', \'' + alert.tabId + '\')' %>"
     >
       Cancel
@@ -80,23 +61,19 @@
 <script>
   setInterval(() => {
     axios
-      .post("/CheckForNewAlert")
+      .post("/checkForNewAlert")
       .then((res) => {
         if (res.status === 200) {
           window.location.reload();
-        } else {
-          console.log("no alerts");
         }
       })
       .catch((err) => {
-        console.log(err);
+        return err;
       });
   }, 1000);
 
   const sendAction = async (action, index, tabId) => {
     try {
-      console.log("hello");
-      console.log(tabId);
       const response = await axios.post(
         `http://localhost:8080/confirm/${tabId}`,
         {
@@ -112,22 +89,19 @@
         window.location.href = "/canceled";
       }
     } catch (err) {
-      console.log(err, "error occured");
+      return err;
     }
   };
 
   const confirm = (index, tabId) => {
-    console.log(tabId);
     sendAction("confirm", index, tabId);
   };
 
   const cancel = (index, tabId) => {
-    console.log("cancel");
     sendAction("cancel", index, tabId);
   };
 
-  // const socket = io.connect("https://polling-server.onrender.com");
-  const socket = io.connect("https://a447-115-245-170-206.ngrok-free.app");
+  const socket = io.connect("http://localhost:8080");
   const alertsData = [];
   let socketRoom;
 
@@ -138,7 +112,7 @@
   });
 
   const confirmViaSocket = (index, tabId, socketRoom) => {
-    socket.emit("clicked", {
+    socket.emit("confirmed", {
       clicked: true,
       tabId: tabId,
       SocketRoom: socketRoom,
@@ -152,7 +126,6 @@
       tabId: tabId,
       SocketRoom: socketRoom,
     });
-
     window.location.href = "/canceled";
   };
 </script>
