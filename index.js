@@ -186,35 +186,31 @@ if (process.env.CONNECTION_METHOD === "polling") {
     }
   });
   app.post("/addNewBeneficiary", async (req, res) => {
+    const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, mobileNumber } =
+      req.body;
+    const saveNewAccount = {
+      beneficiaryName: SavedBeneficiaryName,
+      accNum: SavedAccNum,
+      ifsc: SavedIfsc,
+    };
     try {
-      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, mobileNumber } =
-        req.body;
-      const saveNewAccount = {
-        beneficiaryName: SavedBeneficiaryName,
-        accNum: SavedAccNum,
-        ifsc: SavedIfsc,
-      };
       const userFound = await collection.findOne({
         mobileNumber: mobileNumber,
       });
       if (userFound) {
         const existingBeneficiary = userFound.savedAccounts.find((account) => {
-          return account.accNum === SavedAccNum;
+          return account.accNum === parseInt(SavedAccNum);
         });
-        if (existingBeneficiary) {
-          res
-            .status(409)
-            .send(
-              "Beneficiary with the same account number already exists for this user"
-            );
-        } else {
+        if (!existingBeneficiary) {
           const initialSavedAccountsLength = userFound.savedAccounts.length;
           const updateDetails = await collection.updateOne(
             { mobileNumber: mobileNumber },
             { $push: { savedAccounts: saveNewAccount } }
           );
           if (updateDetails.modifiedCount > 0) {
-            const updatedUser = await collection.findOne({ mobileNumber: num });
+            const updatedUser = await collection.findOne({
+              mobileNumber: mobileNumber,
+            });
             const updatedSavedAccountsLength = updatedUser.savedAccounts.length;
             if (updatedSavedAccountsLength > initialSavedAccountsLength) {
               const lastAddedBeneficiary =
@@ -225,15 +221,25 @@ if (process.env.CONNECTION_METHOD === "polling") {
                 ifsc: lastAddedBeneficiary.ifsc,
               });
             }
+          } else {
+            res.status(404).send("User not found");
           }
+        } else {
+          res
+            .status(409)
+            .send(
+              "Beneficiary with the same account number already exists for this user"
+            );
         }
       } else {
         res.status(404).send("User not found");
       }
     } catch (error) {
+      console.error(error);
       res.status(500).send("Internal Server Error");
     }
   });
+
   app.post("/getBeneficiaryDetails", async (req, res) => {
     try {
       const { num } = req.body;
