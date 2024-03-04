@@ -7,7 +7,6 @@
     <title>Document</title>
     <link rel="stylesheet" href="./paid.css" />
     <link rel="stylesheet" href="./public/styles/style.css" />
-    <style></style>
   </head>
   <body>
     <div
@@ -40,8 +39,9 @@
     </div>
 
     <script>
+      const mobileNumber = "<%= mobileNumber %>";
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/homePage?mobileNumber=" + mobileNumber;
       }, 3000);
     </script>
   </body>

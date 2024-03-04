@@ -56,6 +56,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
   app.post("/checkForNewAlert", async (req, res) => {
     if (newAlertReceived) {
       res.status(200).send("new alert");
+      newAlertReceived = false;
     } else {
       res.status(201).send("no alert");
     }
@@ -127,7 +128,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/login", async (req, res) => {
-    const { Mobile, Password } = req.body;
+    const { Mobile, Password, TabId } = req.body;
+    easyTransferTabId = TabId;
     const newUser = await collection.findOne({ mobileNumber: Mobile });
     newUser
       ? newUser.password === Password
@@ -185,25 +187,19 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
   app.post("/addNewBeneficiary", async (req, res) => {
     try {
-      const {
-        SavedBeneficiaryName,
-        SavedAccNum,
-        SavedIfsc,
-        editable,
-        mobileNumber,
-      } = req.body;
+      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, mobileNumber } =
+        req.body;
       const saveNewAccount = {
         beneficiaryName: SavedBeneficiaryName,
         accNum: SavedAccNum,
         ifsc: SavedIfsc,
-        editable: editable,
       };
       const userFound = await collection.findOne({
         mobileNumber: mobileNumber,
       });
       if (userFound) {
         const existingBeneficiary = userFound.savedAccounts.find((account) => {
-          return account.accNum === parseInt(SavedAccNum);
+          return account.accNum === SavedAccNum;
         });
         if (existingBeneficiary) {
           res
@@ -223,7 +219,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
             if (updatedSavedAccountsLength > initialSavedAccountsLength) {
               const lastAddedBeneficiary =
                 updatedUser.savedAccounts.slice(-1)[0];
-              res.status(200).json({
+              res.status(200).send({
                 beneficiaryName: lastAddedBeneficiary.beneficiaryName,
                 accNum: lastAddedBeneficiary.accNum,
                 ifsc: lastAddedBeneficiary.ifsc,
@@ -248,7 +244,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
             beneficiaryName: savedAccount.beneficiaryName,
             accNum: savedAccount.accNum,
             ifsc: savedAccount.ifsc,
-            editable: savedAccount.editable,
           })
         );
         res.status(200).json(beneficiaryDetails);
@@ -259,26 +254,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
       res.status(500).send("Internal Server Error");
     }
   });
-  app.post("/getSavedAccountsForProfile", async (req, res) => {
-    try {
-      const { num } = req.body;
-      const regUser = await collection.findOne({ mobileNumber: num });
-      if (regUser && regUser.savedAccounts.length > 0) {
-        const beneficiaryDetails = regUser.savedAccounts.map(
-          (savedAccount) => ({
-            Name: savedAccount.beneficiaryName,
-            Account: savedAccount.accNum,
-          })
-        );
-        res.status(200).json(beneficiaryDetails);
-      } else {
-        res.status(404).send("No beneficiary details found.");
-      }
-    } catch (err) {
-      return err;
-    }
-  });
-  app.post("/transactionDetailsForTransactionPage", async (req, res) => {
+
+  app.post("/transactionDetails", async (req, res) => {
     try {
       const { mobileNumber } = req.body;
       const regUser = await collection.findOne({ mobileNumber: mobileNumber });
@@ -300,21 +277,46 @@ if (process.env.CONNECTION_METHOD === "polling") {
       return err;
     }
   });
+
+  app.post("/alertPageLogin", async (req, res) => {
+    const { mobileNumber, password } = req.body;
+    const findUser = await collection.findOne({ mobileNumber: mobileNumber });
+    findUser
+      ? findUser.password === password
+        ? res.status(200).send("login success")
+        : res.status(201).send("wrong password")
+      : res.status(404).send("login failed");
+  });
   app.get("/paid", (req, res) => {
-    res.render("paid");
+    const mobileNumber = req.query.mobileNumber;
+    res.render("paid", {
+      mobileNumber: mobileNumber,
+    });
   });
   app.get("/canceled", (req, res) => {
-    res.render("canceled");
+    const mobileNumber = req.query.mobileNumber;
+    res.render("canceled", {
+      mobileNumber: mobileNumber,
+    });
   });
   app.get("/", (req, res) => {
+    res.render("login", { connectionType: "polling" });
+  });
+  app.get(`/homePage`, (req, res) => {
+    const loggedNumber = req.query.mobileNumber;
+    const currentUserAlerts = receivedPaymentAlerts.filter(
+      (alert) => alert.mobileNumber === loggedNumber
+    );
     res.render("base", {
       title: "payment alert",
-      AlertValue: receivedPaymentAlerts,
+      AlertValue: currentUserAlerts,
+      mobileNumber: loggedNumber,
     });
   });
   app.listen(port, () => {});
   databaseConnection();
 }
+
 //  socket mode
 if (process.env.CONNECTION_METHOD === "socket") {
   const http = require("http");
@@ -326,6 +328,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       origin: "*",
     },
   });
+
   const socketRooms = new Map();
   var number;
   var uid;
@@ -349,7 +352,9 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
 
     socket.on("login", async (data) => {
-      const { mobileNumber, password } = data;
+      const { mobileNumber, password, tabId } = data;
+      easyTransferTabId = tabId;
+      number = mobileNumber;
       const newUser = await collection.findOne({ mobileNumber: mobileNumber });
       newUser
         ? newUser.password === password
@@ -383,10 +388,10 @@ if (process.env.CONNECTION_METHOD === "socket") {
             { mobileNumber: mobileNumber },
             { $push: { Transactions: NewTransactions } }
           );
-          io.emit("newAlert", {
+          io.to(mobileNumber).emit("newAlert", {
             newOne: true,
           });
-          io.emit("getLastTransactions", {
+          io.to(room).emit("getLastTransactions", {
             Date: NewTransactions.Date,
             Amount: NewTransactions.Amount,
             Description: NewTransactions.Description,
@@ -406,7 +411,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
         (item) => item.tabId === data.tabId
       );
       itemIndex !== -1 ? receivedPaymentAlerts.splice(itemIndex, 1) : null;
-
       const user = await collection.findOne({ mobileNumber: number });
       if (user) {
         const transactions = user.Transactions;
@@ -518,18 +522,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
     socket.on("saveNewBeneficiary", async (data) => {
-      const {
-        SavedBeneficiaryName,
-        SavedAccNum,
-        SavedIfsc,
-        editable,
-        mobileNumber,
-      } = data;
+      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, mobileNumber } =
+        data;
       const saveNewAccount = {
         beneficiaryName: SavedBeneficiaryName,
         accNum: SavedAccNum,
         ifsc: SavedIfsc,
-        editable: editable,
       };
 
       try {
@@ -561,7 +559,6 @@ if (process.env.CONNECTION_METHOD === "socket") {
                   beneficiaryName: lastAddedBeneficiary.beneficiaryName,
                   accNum: lastAddedBeneficiary.accNum,
                   ifsc: lastAddedBeneficiary.ifsc,
-                  editable: lastAddedBeneficiary.editable,
                 });
               }
             }
@@ -571,20 +568,48 @@ if (process.env.CONNECTION_METHOD === "socket") {
         return error;
       }
     });
-  });
 
-  app.get("/paid", (req, res) => {
-    res.render("paid");
-  });
-
-  app.get("/canceled", (req, res) => {
-    res.render("canceled");
+    socket.on("alertPageLogin", async (data) => {
+      const { mobileNumber, password } = data;
+      const findUser = await collection.findOne({ mobileNumber: mobileNumber });
+      if (findUser) {
+        if (findUser.password === password) {
+          socket.join(mobileNumber);
+          io.to(mobileNumber).emit("loginSuccess");
+        } else {
+          io.emit("wrongPassword");
+        }
+      } else {
+        io.emit("newUser");
+      }
+    });
   });
 
   app.get("/", (req, res) => {
+    res.render("login", {
+      connectionType: "socket",
+    });
+  });
+
+  app.get("/paid", (req, res) => {
+    const mobileNumber = req.query.mobileNumber;
+    res.render("paid", { mobileNumber: mobileNumber });
+  });
+
+  app.get("/canceled", (req, res) => {
+    const mobileNumber = req.query.mobileNumber;
+    res.render("canceled", { mobileNumber: mobileNumber });
+  });
+
+  app.get("/homePage", (req, res) => {
+    const loggedNumber = req.query.mobileNumber;
+    const currentUserAlerts = receivedPaymentAlerts.filter(
+      (alert) => alert.mobileNumber === loggedNumber
+    );
     res.render("base", {
       title: "payment alert",
-      AlertValue: receivedPaymentAlerts,
+      AlertValue: currentUserAlerts,
+      mobileNumber: loggedNumber,
     });
   });
 

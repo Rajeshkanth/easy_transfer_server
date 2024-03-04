@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <script src="./public/styles/libPhoneNumber.js"></script>
+    <link rel="stylesheet" href="./public/styles/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script> -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+    />
+    <!-- <script src="./public/styles/axios.js"></script>
+    <script src="./public/styles/socket.js"></script> -->
+    <script src="./public/styles/intlTelInput.js"></script>
+  </head>
+  <body>
+    <div
+      class="h-screen w-screen bg-gray-800 fixed flex items-center justify-center font-poppins"
+    >
+      <form
+        class="w-3/4 md:w-1/2 lg:w-1/3 min-h-96 m-auto grid rounded-lg bg-white py-10 space-y-5"
+      >
+        <h1
+          class="text-center m-0 mb-3 text-xl sm:text-xl md:text-2xl text-gray-700 font-bold font-poppins cursor-default"
+        >
+          Welcome Back
+        </h1>
+        <div class="w-3/4 mb-2 m-auto flex flex-col">
+          <label for="mobileNumber" class="text-sm mb-1">Mobile Number</label>
+          <input
+            maxlength="15"
+            pattern="[0-9]{10}"
+            name="mobileNumber"
+            type="tel"
+            id="mobileNumber"
+            class="l-6 outline-0 h-10 w-full border border-slate-300 rounded-md text-base pl-10 font-poppins border-box focus:outline-none"
+          />
+          <div class="error-message text-xs text-red-600 mt-1"></div>
+        </div>
+        <div class="w-3/4 mb-2 m-auto">
+          <label for="password" class="text-sm mb-1">Password</label>
+          <input
+            name="password"
+            placeholder="Enter Password"
+            type="password"
+            class="l-6 outline-0 h-10 w-full border border-slate-300 rounded-md text-base pl-2 font-poppins border-box focus:outline-none"
+          />
+          <div class="password-error-message text-xs text-red-600 mt-1"></div>
+        </div>
+        <div class="w-3/4 mb-4 m-auto">
+          <input
+            type="submit"
+            value="Login"
+            class="w-full mt-3 mb-4 border-0 outline-0 hover:bg-gray-600 bg-gray-800 text-white text-center cursor-pointer p-2 font-bold h-auto rounded-md"
+          />
+        </div>
+      </form>
+    </div>
+    <script>
+      const mobileNumberInput = document.querySelector("#mobileNumber");
+      const passwordInput = document.querySelector("input[name='password']");
+      const mobileNumberError = document.querySelector(".error-message");
+      const passwordError = document.querySelector(".password-error-message");
+
+      var iti = window.intlTelInput(mobileNumberInput, {
+        initialCountry: "in",
+        utilsScript:
+          "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+      });
+      const countryCode = iti.getSelectedCountryData().iso2;
+      const dialCode = iti.getSelectedCountryData().dialCode;
+
+      mobileNumberInput.addEventListener("input", function (event) {
+        let inputValue = event.target.value;
+        inputValue = inputValue.replace(/\D/g, "");
+        event.target.value = inputValue;
+      });
+
+      const socket = io.connect("http://localhost:8080");
+      const loginViaSocket = (event) => {
+        event.preventDefault();
+        const mobileNumber = mobileNumberInput.value;
+        const password = passwordInput.value;
+        const isValidNumber = iti.isValidNumber(mobileNumber);
+        if (mobileNumber && password && isValidNumber) {
+          socket.emit("alertPageLogin", {
+            mobileNumber: mobileNumber,
+            password: password,
+          });
+          socket.on("loginSuccess", () => {
+            window.location.href = "/homePage?mobileNumber=" + mobileNumber;
+            mobileNumberError.innerText = "";
+            passwordError.innerText = "";
+          });
+          socket.on("wrongPassword", () => {
+            passwordError.innerText = "Wrong password";
+          });
+          socket.on("newUser", () => {
+            mobileNumberError.innerText = "Wrong mobile number";
+          });
+        } else {
+          mobileNumber && !isValidNumber
+            ? (document.querySelector(".error-message").innerText =
+                "Invalid number")
+            : !mobileNumber
+            ? (document.querySelector(".error-message").innerText =
+                "Enter mobile number")
+            : (document.querySelector(".error-message").innerText = "");
+          !password
+            ? (document.querySelector(".password-error-message").innerText =
+                "Enter password")
+            : (document.querySelector(".password-error-message").innerText =
+                "");
+        }
+      };
+      const loginViaPolling = (event) => {
+        event.preventDefault();
+        const mobileNumber = mobileNumberInput.value;
+        const password = passwordInput.value;
+        const isValidNumber = iti.isValidNumber(mobileNumber);
+        if (mobileNumber && password && isValidNumber) {
+          axios
+            .post("/alertPageLogin", {
+              mobileNumber: mobileNumber,
+              password: password,
+            })
+            .then((res) => {
+              switch (res.status) {
+                case 200:
+                  window.location.href =
+                    `/homePage?mobileNumber=` + mobileNumber;
+                  mobileNumberError.innerText = "";
+                  passwordError.innerText = "";
+                  mobileNumberInput.value = "";
+                  passwordInput.value = "";
+                  break;
+                case 201:
+                  passwordError.innerText = "Wrong password";
+                  break;
+                case 404:
+                  mobileNumberError.innerText = "Wrong mobile number";
+                  break;
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else {
+          mobileNumber && !isValidNumber
+            ? (document.querySelector(".error-message").innerText =
+                "Invalid number")
+            : !mobileNumber
+            ? (document.querySelector(".error-message").innerText =
+                "Enter mobile number")
+            : (document.querySelector(".error-message").innerText = "");
+          !password
+            ? (document.querySelector(".password-error-message").innerText =
+                "Enter password")
+            : (document.querySelector(".password-error-message").innerText =
+                "");
+        }
+      };
+
+      document.querySelector("form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const connectionType = "<%= connectionType %>";
+        if (connectionType === "socket") {
+          loginViaSocket(event);
+        } else {
+          loginViaPolling(event);
+        }
+      });
+    </script>
+  </body>
+</html>

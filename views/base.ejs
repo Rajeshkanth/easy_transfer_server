@@ -2,22 +2,19 @@
 
 
 <div
-  class="header min-h-10 p-3  font-poppins font-bold flex items-center text-left w-screen bg-gray-300 fixed top-0 text-black"
+  class="header min-h-10 p-3 justify-evenly font-poppins font-bold flex items-center text-left w-screen bg-gray-700 fixed top-0 text-black"
 >
-  <h1 class="m-0 z-10">Transaction Alerts</h1>
+  <h1 class="m-0 z-10 w-3/4  text-white">Transaction Alerts</h1>
+  <button class="border outline-none font-bold w-20 hover:text-white hover:cursor-pointer bg-white text-gray-800 hover:bg-gray-700 border-gray-800 p-1 rounded-md" onclick="logout()">Log out</button>
 </div>
 
-<div
-  class="form-container  mt-12"
-  style="height: <%= AlertValue.length>3?'auto':'100vh'%>;"
->
+<div class="form-container  mt-12 font-poppins">
   <% AlertValue.forEach((alert, index) =>{ %>
-
   <div
     key="<%=index%>"
     class="transfer-details-container p-2 border-b border-gray-400 pl-2"
   >
-    <h5 class="transfer-text m-0 mb-1">Transfer Details</h5>
+    <h5 class="transfer-text m-0 mt-2 mb-1">Transfer Details</h5>
     <div class="container flex justify-between items-center">
       <h5 class="m-1 mt-1 text-gray-600 ">Recipient</h5>
       <h4 class="m-1 mt-1 font-bold "><%=alert.AccHolder%></h4>
@@ -59,6 +56,12 @@
 <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
 
 <script>
+
+const mobileNumber = "<%= mobileNumber %>";
+
+  const logout=()=>{
+    window.location.href="/"
+  }
   setInterval(() => {
     axios
       .post("/checkForNewAlert")
@@ -84,15 +87,14 @@
       );
 
       if (response.status === 200) {
-        window.location.href = "/paid";
+        window.location.href = "/paid?mobileNumber=" + mobileNumber;
       } else if (response.status === 201) {
-        window.location.href = "/canceled";
+        window.location.href = "/canceled?mobileNumber=" + mobileNumber;
       }
     } catch (err) {
       return err;
     }
   };
-
   const confirm = (index, tabId) => {
     sendAction("confirm", index, tabId);
   };
@@ -110,23 +112,21 @@
       window.location.reload();
     }
   });
-
   const confirmViaSocket = (index, tabId, socketRoom) => {
     socket.emit("confirmed", {
       clicked: true,
       tabId: tabId,
       SocketRoom: socketRoom,
     });
-    window.location.href = "/paid";
+    window.location.href = "/paid?mobileNumber=" + mobileNumber;
   };
-
   const cancelViaSocket = (index, tabId, socketRoom) => {
     socket.emit("canceled", {
       cancel: true,
       tabId: tabId,
       SocketRoom: socketRoom,
     });
-    window.location.href = "/canceled";
+    window.location.href = "/canceled?mobileNumber=" + mobileNumber;
   };
 </script>
 
