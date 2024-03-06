@@ -79,6 +79,7 @@
       });
 
       const socket = io.connect("http://localhost:8080");
+
       const loginViaSocket = (event) => {
         event.preventDefault();
         const mobileNumber = mobileNumberInput.value;
@@ -135,7 +136,7 @@
                 case 201:
                   passwordError.innerText = "Wrong password";
                   break;
-                case 404:
+                case 202:
                   mobileNumberError.innerText = "Wrong mobile number";
                   break;
               }

@@ -287,27 +287,33 @@ if (process.env.CONNECTION_METHOD === "polling") {
   app.post("/alertPageLogin", async (req, res) => {
     const { mobileNumber, password } = req.body;
     const findUser = await collection.findOne({ mobileNumber: mobileNumber });
-    findUser
-      ? findUser.password === password
+    if (findUser) {
+      findUser.password === password
         ? res.status(200).send("login success")
-        : res.status(201).send("wrong password")
-      : res.status(404).send("login failed");
+        : res.status(201).send("wrong password");
+    } else {
+      res.status(202).send("login failed");
+    }
   });
+
   app.get("/paid", (req, res) => {
     const mobileNumber = req.query.mobileNumber;
     res.render("paid", {
       mobileNumber: mobileNumber,
     });
   });
+
   app.get("/canceled", (req, res) => {
     const mobileNumber = req.query.mobileNumber;
     res.render("canceled", {
       mobileNumber: mobileNumber,
     });
   });
+
   app.get("/", (req, res) => {
     res.render("login", { connectionType: "polling" });
   });
+
   app.get(`/homePage`, (req, res) => {
     const loggedNumber = req.query.mobileNumber;
     const currentUserAlerts = receivedPaymentAlerts.filter(
@@ -319,10 +325,13 @@ if (process.env.CONNECTION_METHOD === "polling") {
       mobileNumber: loggedNumber,
     });
   });
+
   app.listen(port, () => {});
   databaseConnection();
 }
+
 //  socket mode
+
 if (process.env.CONNECTION_METHOD === "socket") {
   const http = require("http");
   const { Server } = require("socket.io");
@@ -406,6 +415,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         return err;
       }
     });
+
     socket.on("successPage", (data) => {
       const socketID = data.socketRoom;
       socket.join(socketID);
@@ -428,6 +438,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         }
       }
     });
+
     socket.on("canceled", async (data) => {
       const itemIndex = receivedPaymentAlerts.findIndex(
         (item) => item.tabId === data.tabId
@@ -448,6 +459,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         }
       }
     });
+
     socket.on("checkUserName", async (data) => {
       const mobileNumber = data.regNumber;
       const numberFound = await collection.findOne({
@@ -465,6 +477,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           })
         : null;
     });
+
     socket.on("updateProfile", async (data) => {
       const { mobileNumber, name, age, dob, accNum, card, cvv, expireDate } =
         data;
@@ -496,6 +509,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
           : null;
       }
     });
+
     socket.on("getSavedAccounts", async (data) => {
       const { mobileNumber } = data;
       const regUser = await collection.findOne({ mobileNumber: mobileNumber });
@@ -510,6 +524,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         });
       }
     });
+
     socket.on("getTransactionDetails", async (data) => {
       const { mobileNumber } = data;
       const regUser = await collection.findOne({ mobileNumber: mobileNumber });
@@ -525,6 +540,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         });
       }
     });
+
     socket.on("saveNewBeneficiary", async (data) => {
       const { savedBeneficiaryName, savedAccNum, savedIfsc, mobileNumber } =
         data;
@@ -618,6 +634,5 @@ if (process.env.CONNECTION_METHOD === "socket") {
   });
 
   databaseConnection();
-
   server.listen(port);
 }
