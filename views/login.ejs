@@ -58,113 +58,105 @@
         </div>
       </form>
     </div>
+
     <script>
       const mobileNumberInput = document.querySelector("#mobileNumber");
       const passwordInput = document.querySelector("input[name='password']");
       const mobileNumberError = document.querySelector(".error-message");
       const passwordError = document.querySelector(".password-error-message");
 
-      var iti = window.intlTelInput(mobileNumberInput, {
+      const iti = window.intlTelInput(mobileNumberInput, {
         initialCountry: "in",
         utilsScript:
           "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
       });
-      const countryCode = iti.getSelectedCountryData().iso2;
-      const dialCode = iti.getSelectedCountryData().dialCode;
 
       mobileNumberInput.addEventListener("input", function (event) {
-        let inputValue = event.target.value;
-        inputValue = inputValue.replace(/\D/g, "");
-        event.target.value = inputValue;
+        event.target.value = event.target.value.replace(/\D/g, "");
       });
 
       const socket = io.connect("http://localhost:8080");
 
-      const loginViaSocket = (event) => {
-        event.preventDefault();
-        const mobileNumber = mobileNumberInput.value;
-        const password = passwordInput.value;
-        const isValidNumber = iti.isValidNumber(mobileNumber);
-        if (mobileNumber && password && isValidNumber) {
-          socket.emit("alertPageLogin", {
-            mobileNumber: mobileNumber,
-            password: password,
-          });
-          socket.on("loginSuccess", () => {
-            window.location.href = "/homePage?mobileNumber=" + mobileNumber;
-            mobileNumberError.innerText = "";
-            passwordError.innerText = "";
-          });
-          socket.on("wrongPassword", () => {
-            passwordError.innerText = "Wrong password";
-          });
-          socket.on("newUser", () => {
-            mobileNumberError.innerText = "Wrong mobile number";
-          });
-        } else {
-          mobileNumber && !isValidNumber
-            ? (mobileNumberError.innerText = "Invalid number")
-            : !mobileNumber
-            ? (mobileNumberError.innerText = "Enter mobile number")
-            : (mobileNumberError.innerText = "");
-          !password
-            ? (passwordError.innerText = "Enter password")
-            : (passwordError.innerText = "");
-        }
+      const handleSocketLogin = () => {
+        socket.emit("alertPageLogin", {
+          mobileNumber: mobileNumberInput.value,
+          password: passwordInput.value,
+        });
+
+        socket.on("loginSuccess", () => {
+          window.location.href = `/homePage?mobileNumber=${mobileNumberInput.value}`;
+          clearErrorMessages();
+        });
+
+        socket.on("wrongPassword", () => {
+          displayErrorMessage(passwordError, "Wrong password");
+        });
+
+        socket.on("newUser", () => {
+          displayErrorMessage(mobileNumberError, "Wrong mobile number");
+        });
       };
-      const loginViaPolling = (event) => {
+
+      const handlePollingLogin = () => {
+        axios
+          .post("/alertPageLogin", {
+            mobileNumber: mobileNumberInput.value,
+            password: passwordInput.value,
+          })
+          .then((res) => {
+            switch (res.status) {
+              case 200:
+                window.location.href = `/homePage?mobileNumber=${mobileNumberInput.value}`;
+                clearErrorMessages();
+                mobileNumberInput.value = "";
+                passwordInput.value = "";
+                break;
+              case 201:
+                displayErrorMessage(passwordError, "Wrong password");
+                break;
+              case 202:
+                displayErrorMessage(mobileNumberError, "Wrong mobile number");
+                break;
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      };
+
+      const clearErrorMessages = () => {
+        mobileNumberError.innerText = "";
+        passwordError.innerText = "";
+      };
+
+      const displayErrorMessage = (element, message) => {
+        element.innerText = message;
+      };
+
+      const login = (event) => {
         event.preventDefault();
         const mobileNumber = mobileNumberInput.value;
         const password = passwordInput.value;
         const isValidNumber = iti.isValidNumber(mobileNumber);
+
         if (mobileNumber && password && isValidNumber) {
-          axios
-            .post("/alertPageLogin", {
-              mobileNumber: mobileNumber,
-              password: password,
-            })
-            .then((res) => {
-              switch (res.status) {
-                case 200:
-                  window.location.href =
-                    `/homePage?mobileNumber=` + mobileNumber;
-                  mobileNumberError.innerText = "";
-                  passwordError.innerText = "";
-                  mobileNumberInput.value = "";
-                  passwordInput.value = "";
-                  break;
-                case 201:
-                  passwordError.innerText = "Wrong password";
-                  break;
-                case 202:
-                  mobileNumberError.innerText = "Wrong mobile number";
-                  break;
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          const connectionType = "<%= connectionType %>";
+          connectionType === "socket"
+            ? handleSocketLogin()
+            : handlePollingLogin();
         } else {
-          mobileNumber && !isValidNumber
-            ? (mobileNumberError.innerText = "Invalid number")
-            : !mobileNumber
-            ? (mobileNumberError.innerText = "Enter mobile number")
-            : (mobileNumberError.innerText = "");
-          !password
-            ? (passwordError.innerText = "Enter password")
-            : (passwordError.innerText = "");
+          displayErrorMessage(
+            mobileNumber && !isValidNumber ? mobileNumberError : passwordError,
+            mobileNumber ? "Invalid number" : "Enter mobile number"
+          );
+          displayErrorMessage(
+            !password ? passwordError : mobileNumberError,
+            !password ? "Enter password" : ""
+          );
         }
       };
 
-      document.querySelector("form").addEventListener("submit", (event) => {
-        event.preventDefault();
-        const connectionType = "<%= connectionType %>";
-        if (connectionType === "socket") {
-          loginViaSocket(event);
-        } else {
-          loginViaPolling(event);
-        }
-      });
+      document.querySelector("form").addEventListener("submit", login);
     </script>
   </body>
 </html>
