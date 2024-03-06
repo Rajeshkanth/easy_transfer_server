@@ -65,37 +65,38 @@ if (process.env.CONNECTION_METHOD === "polling") {
   app.post("/confirm/:tabId", async (req, res) => {
     const tabId = req.params.tabId;
     const action = req.body.Action;
-    if (action === "confirm") {
-      const user = await collection.findOne({ mobileNumber: number });
-      if (user) {
-        const transactions = user.Transactions;
-        const transaction = transactions.find(
-          (transaction) => transaction.Uid === uid
-        );
-        if (transaction) {
-          transaction.Status = "completed";
-          await user.save();
-          confirmationstatus[tabId] = "confirm";
-          receivedPaymentAlerts.splice(req.body.index, 1);
-          res.status(200).send();
+    const user = await collection.findOne({ mobileNumber: number });
+    switch (action) {
+      case "confirm":
+        if (user) {
+          const transactions = user.Transactions;
+          const transaction = transactions.find(
+            (transaction) => transaction.Uid === uid
+          );
+          if (transaction) {
+            transaction.Status = "completed";
+            await user.save();
+            confirmationstatus[tabId] = "confirm";
+            receivedPaymentAlerts.splice(req.body.index, 1);
+            res.status(200).send();
+          }
         }
-      }
-    } else if (action === "cancel") {
-      const user = await collection.findOne({ mobileNumber: number });
-      newAlert = false;
-      if (user) {
-        const transactions = user.Transactions;
-        const transaction = transactions.find(
-          (transaction) => transaction.Uid === uid
-        );
-        if (transaction) {
-          transaction.Status = "canceled";
-          await user.save();
-          confirmationstatus[tabId] = "cancel";
-          receivedPaymentAlerts.splice(req.body.index, 1);
-          res.status(201).send();
+        break;
+      case "cancel":
+        if (user) {
+          const transactions = user.Transactions;
+          const transaction = transactions.find(
+            (transaction) => transaction.Uid === uid
+          );
+          if (transaction) {
+            transaction.Status = "canceled";
+            await user.save();
+            confirmationstatus[tabId] = "cancel";
+            receivedPaymentAlerts.splice(req.body.index, 1);
+            res.status(201).send();
+          }
         }
-      }
+        break;
     }
   });
   app.post("/success/:tabId", (req, res) => {
@@ -128,8 +129,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/login", async (req, res) => {
-    const { Mobile, Password, TabId } = req.body;
-    easyTransferTabId = TabId;
+    const { Mobile, Password } = req.body;
     const newUser = await collection.findOne({ mobileNumber: Mobile });
     newUser
       ? newUser.password === Password
@@ -138,11 +138,14 @@ if (process.env.CONNECTION_METHOD === "polling") {
       : res.status(201).send("new user");
   });
   app.post("/updateProfile", async (req, res) => {
-    const { data, name, age, dob, accNum, card, cvv, expireDate } = req.body;
-    const numberFound = await collection.findOne({ mobileNumber: data });
+    const { mobileNumber, name, age, dob, accNum, card, cvv, expireDate } =
+      req.body;
+    const numberFound = await collection.findOne({
+      mobileNumber: mobileNumber,
+    });
     if (numberFound) {
       const updateResult = await collection.updateOne(
-        { mobileNumber: data },
+        { mobileNumber: mobileNumber },
         {
           $set: {
             userName: name,
@@ -186,12 +189,12 @@ if (process.env.CONNECTION_METHOD === "polling") {
     }
   });
   app.post("/addNewBeneficiary", async (req, res) => {
-    const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, mobileNumber } =
+    const { savedBeneficiaryName, savedAccNum, savedIfsc, mobileNumber } =
       req.body;
     const saveNewAccount = {
-      beneficiaryName: SavedBeneficiaryName,
-      accNum: SavedAccNum,
-      ifsc: SavedIfsc,
+      beneficiaryName: savedBeneficiaryName,
+      accNum: savedAccNum,
+      ifsc: savedIfsc,
     };
     try {
       const userFound = await collection.findOne({
@@ -199,7 +202,7 @@ if (process.env.CONNECTION_METHOD === "polling") {
       });
       if (userFound) {
         const existingBeneficiary = userFound.savedAccounts.find((account) => {
-          return account.accNum === parseInt(SavedAccNum);
+          return parseInt(account.accNum) === parseInt(savedAccNum);
         });
         if (!existingBeneficiary) {
           const initialSavedAccountsLength = userFound.savedAccounts.length;
@@ -221,8 +224,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
                 ifsc: lastAddedBeneficiary.ifsc,
               });
             }
-          } else {
-            res.status(404).send("User not found");
           }
         } else {
           res
@@ -235,7 +236,6 @@ if (process.env.CONNECTION_METHOD === "polling") {
         res.status(404).send("User not found");
       }
     } catch (error) {
-      console.error(error);
       res.status(500).send("Internal Server Error");
     }
   });
@@ -315,14 +315,13 @@ if (process.env.CONNECTION_METHOD === "polling") {
     );
     res.render("base", {
       title: "payment alert",
-      AlertValue: currentUserAlerts,
+      alertValue: currentUserAlerts,
       mobileNumber: loggedNumber,
     });
   });
   app.listen(port, () => {});
   databaseConnection();
 }
-
 //  socket mode
 if (process.env.CONNECTION_METHOD === "socket") {
   const http = require("http");
@@ -358,8 +357,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     });
 
     socket.on("login", async (data) => {
-      const { mobileNumber, password, tabId } = data;
-      easyTransferTabId = tabId;
+      const { mobileNumber, password } = data;
       number = mobileNumber;
       const newUser = await collection.findOne({ mobileNumber: mobileNumber });
       newUser
@@ -528,12 +526,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
     });
     socket.on("saveNewBeneficiary", async (data) => {
-      const { SavedBeneficiaryName, SavedAccNum, SavedIfsc, mobileNumber } =
+      const { savedBeneficiaryName, savedAccNum, savedIfsc, mobileNumber } =
         data;
       const saveNewAccount = {
-        beneficiaryName: SavedBeneficiaryName,
-        accNum: SavedAccNum,
-        ifsc: SavedIfsc,
+        beneficiaryName: savedBeneficiaryName,
+        accNum: savedAccNum,
+        ifsc: savedIfsc,
       };
 
       try {
@@ -543,7 +541,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
         if (userFound) {
           const existingBeneficiary = userFound.savedAccounts.find(
             (account) => {
-              return account.accNum === parseInt(SavedAccNum);
+              return account.accNum === parseInt(savedAccNum);
             }
           );
           if (!existingBeneficiary) {
@@ -614,7 +612,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     );
     res.render("base", {
       title: "payment alert",
-      AlertValue: currentUserAlerts,
+      alertValue: currentUserAlerts,
       mobileNumber: loggedNumber,
     });
   });
