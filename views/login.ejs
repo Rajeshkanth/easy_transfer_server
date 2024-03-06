@@ -102,17 +102,13 @@
           });
         } else {
           mobileNumber && !isValidNumber
-            ? (document.querySelector(".error-message").innerText =
-                "Invalid number")
+            ? (mobileNumberError.innerText = "Invalid number")
             : !mobileNumber
-            ? (document.querySelector(".error-message").innerText =
-                "Enter mobile number")
-            : (document.querySelector(".error-message").innerText = "");
+            ? (mobileNumberError.innerText = "Enter mobile number")
+            : (mobileNumberError.innerText = "");
           !password
-            ? (document.querySelector(".password-error-message").innerText =
-                "Enter password")
-            : (document.querySelector(".password-error-message").innerText =
-                "");
+            ? (passwordError.innerText = "Enter password")
+            : (passwordError.innerText = "");
         }
       };
       const loginViaPolling = (event) => {
@@ -149,17 +145,13 @@
             });
         } else {
           mobileNumber && !isValidNumber
-            ? (document.querySelector(".error-message").innerText =
-                "Invalid number")
+            ? (mobileNumberError.innerText = "Invalid number")
             : !mobileNumber
-            ? (document.querySelector(".error-message").innerText =
-                "Enter mobile number")
-            : (document.querySelector(".error-message").innerText = "");
+            ? (mobileNumberError.innerText = "Enter mobile number")
+            : (mobileNumberError.innerText = "");
           !password
-            ? (document.querySelector(".password-error-message").innerText =
-                "Enter password")
-            : (document.querySelector(".password-error-message").innerText =
-                "");
+            ? (passwordError.innerText = "Enter password")
+            : (passwordError.innerText = "");
         }
       };
 
