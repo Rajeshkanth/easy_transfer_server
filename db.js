@@ -2,7 +2,7 @@ const { default: mongoose } = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   mobileNumber: {
-    type: Number,
+    type: String,
     required: true,
   },
   password: {
@@ -32,21 +32,18 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      editable: {
-        type: Boolean,
-      },
       amount: {
         type: Number,
       },
     },
   ],
-  Transactions: [
+  transactions: [
     {
-      Date: String,
-      Name: String,
-      Amount: Number,
-      Status: String,
-      Uid: String,
+      date: String,
+      name: String,
+      amount: Number,
+      status: String,
+      uid: String,
     },
   ],
 });

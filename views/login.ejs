@@ -5,15 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-    <script src="./public/styles/libPhoneNumber.js"></script>
-    <link rel="stylesheet" href="./public/styles/style.css" />
+    <link rel="stylesheet" href="./assets/styles/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
     />
-    <script src="./public/styles/intlTelInput.js"></script>
+    <script src="./assets/scripts/intlTelInput.js"></script>
   </head>
   <body>
     <div
@@ -31,7 +30,6 @@
           <label for="mobileNumber" class="text-sm mb-1">Mobile Number</label>
           <input
             maxlength="15"
-            pattern="[0-9]{10}"
             name="mobileNumber"
             type="tel"
             id="mobileNumber"
@@ -60,19 +58,31 @@
     </div>
 
     <script>
+      const form = document.querySelector("form");
       const mobileNumberInput = document.querySelector("#mobileNumber");
       const passwordInput = document.querySelector("input[name='password']");
       const mobileNumberError = document.querySelector(".error-message");
       const passwordError = document.querySelector(".password-error-message");
 
       const iti = window.intlTelInput(mobileNumberInput, {
-        initialCountry: "in",
+        fixDropDownWidth: true,
         utilsScript:
           "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
       });
 
       mobileNumberInput.addEventListener("input", function (event) {
-        event.target.value = event.target.value.replace(/\D/g, "");
+        const dialCode = event.target.value.replace(/\D/g, "");
+        const countryCode = iti
+          .getCountryData()
+          .find((country) => country.dialCode === "+" + dialCode)?.iso2;
+        if (countryCode) {
+          iti.setCountry(countryCode);
+          const phoneNumberWithoutDialCode = event.target.value.replace(
+            "+" + dialCode,
+            ""
+          );
+          event.target.value = phoneNumberWithoutDialCode;
+        }
       });
 
       const socket = io.connect("http://localhost:8080");
@@ -120,7 +130,7 @@
             }
           })
           .catch((err) => {
-            console.log(err);
+            return err;
           });
       };
 
@@ -137,6 +147,7 @@
         event.preventDefault();
         const mobileNumber = mobileNumberInput.value;
         const password = passwordInput.value;
+        alert(mobileNumber);
         const isValidNumber = iti.isValidNumber(mobileNumber);
 
         if (mobileNumber && password && isValidNumber) {
@@ -156,7 +167,7 @@
         }
       };
 
-      document.querySelector("form").addEventListener("submit", login);
+      form.addEventListener("submit", login);
     </script>
   </body>
 </html>

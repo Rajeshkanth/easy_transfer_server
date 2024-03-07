@@ -32,20 +32,22 @@ if (process.env.CONNECTION_METHOD === "polling") {
     const { mobileNumber, newTransaction } = req.body;
     number = mobileNumber;
     newAlertReceived = true;
-    uid = newTransaction.Uid;
+    uid = newTransaction.uid;
     receivedPaymentAlerts.push(newRequest);
     try {
-      const userFound = await collection.findOne({ mobileNumber: number });
+      const userFound = await collection.findOne({
+        mobileNumber: mobileNumber,
+      });
       if (userFound) {
         await collection.updateOne(
           { mobileNumber: number },
-          { $push: { Transactions: newTransaction } }
+          { $push: { transactions: newTransaction } }
         );
         res.status(200).send({
-          Date: newRequest.Date,
-          Amount: newRequest.Amount,
-          Description: newRequest.Description,
-          Status: newRequest.Status,
+          date: newRequest.date,
+          amount: newRequest.dmount,
+          description: newRequest.description,
+          status: newRequest.dtatus,
         });
       }
     } catch (err) {
@@ -66,39 +68,41 @@ if (process.env.CONNECTION_METHOD === "polling") {
     const tabId = req.params.tabId;
     const action = req.body.Action;
     const user = await collection.findOne({ mobileNumber: number });
+
     switch (action) {
       case "confirm":
         if (user) {
-          const transactions = user.Transactions;
+          const transactions = user.transactions;
           const transaction = transactions.find(
-            (transaction) => transaction.Uid === uid
+            (transaction) => transaction.uid === uid
           );
           if (transaction) {
-            transaction.Status = "completed";
+            transaction.status = "completed";
             await user.save();
             confirmationstatus[tabId] = "confirm";
             receivedPaymentAlerts.splice(req.body.index, 1);
-            res.status(200).send();
+            res.status(200).send("confirmed");
           }
         }
         break;
       case "cancel":
         if (user) {
-          const transactions = user.Transactions;
+          const transactions = user.transactions;
           const transaction = transactions.find(
-            (transaction) => transaction.Uid === uid
+            (transaction) => transaction.uid === uid
           );
           if (transaction) {
-            transaction.Status = "canceled";
+            transaction.status = "canceled";
             await user.save();
             confirmationstatus[tabId] = "cancel";
             receivedPaymentAlerts.splice(req.body.index, 1);
-            res.status(201).send();
+            res.status(201).send("canceled");
           }
         }
         break;
     }
   });
+
   app.post("/success/:tabId", (req, res) => {
     const tabId = req.params.tabId;
     switch (confirmationstatus[tabId]) {
@@ -116,11 +120,11 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/signUp", async (req, res) => {
-    const { Mobile, Password } = req.body;
-    const existingUser = await collection.findOne({ mobileNumber: Mobile });
+    const { mobile, password } = req.body;
+    const existingUser = await collection.findOne({ mobileNumber: mobile });
     const data = {
-      mobileNumber: Mobile,
-      password: Password,
+      mobileNumber: mobile,
+      password: password,
     };
     existingUser
       ? res.status(201).send("user already")
@@ -129,14 +133,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
   });
 
   app.post("/login", async (req, res) => {
-    const { Mobile, Password } = req.body;
-    const newUser = await collection.findOne({ mobileNumber: Mobile });
+    const { mobile, password } = req.body;
+    const newUser = await collection.findOne({ mobileNumber: mobile });
     newUser
-      ? newUser.password === Password
+      ? newUser.password === password
         ? res.status(200).send("ok")
         : res.status(202).send("wrong password")
       : res.status(201).send("new user");
   });
+
   app.post("/updateProfile", async (req, res) => {
     const { mobileNumber, name, age, dob, accNum, card, cvv, expireDate } =
       req.body;
@@ -242,8 +247,8 @@ if (process.env.CONNECTION_METHOD === "polling") {
 
   app.post("/getBeneficiaryDetails", async (req, res) => {
     try {
-      const { num } = req.body;
-      const regUser = await collection.findOne({ mobileNumber: num });
+      const { mobileNumber } = req.body;
+      const regUser = await collection.findOne({ mobileNumber: mobileNumber });
       if (regUser && regUser.savedAccounts.length > 0) {
         const beneficiaryDetails = regUser.savedAccounts.map(
           (savedAccount) => ({
@@ -265,13 +270,14 @@ if (process.env.CONNECTION_METHOD === "polling") {
     try {
       const { mobileNumber } = req.body;
       const regUser = await collection.findOne({ mobileNumber: mobileNumber });
-      if (regUser && regUser.Transactions.length > 0) {
-        const transactionDetails = regUser.Transactions.map((transaction) => ({
-          Date: transaction.Date,
-          Name: transaction.Name,
-          Status: transaction.Status,
-          Amount: transaction.Amount,
+      if (regUser && regUser.transactions.length > 0) {
+        const transactionDetails = regUser.transactions.map((transaction) => ({
+          date: transaction.date,
+          name: transaction.name,
+          status: transaction.status,
+          amount: transaction.amount,
         }));
+
         res.status(200).json({
           transactions: transactionDetails,
           count: transactionDetails.length,
@@ -314,11 +320,15 @@ if (process.env.CONNECTION_METHOD === "polling") {
     res.render("login", { connectionType: "polling" });
   });
 
-  app.get(`/homePage`, (req, res) => {
-    const loggedNumber = req.query.mobileNumber;
+  app.get("/homePage", (req, res) => {
+    let loggedNumber = req.query.mobileNumber;
+    loggedNumber = loggedNumber.replace(/\s/g, "");
+    const mobileNumber = `+${loggedNumber}`;
+
     const currentUserAlerts = receivedPaymentAlerts.filter(
-      (alert) => alert.mobileNumber === loggedNumber
+      (alert) => alert.mobileNumber === mobileNumber
     );
+
     res.render("base", {
       title: "payment alert",
       alertValue: currentUserAlerts,
@@ -346,45 +356,56 @@ if (process.env.CONNECTION_METHOD === "socket") {
   const socketRooms = new Map();
   var number;
   var uid;
+
   io.on("connection", (socket) => {
     io.emit("connection_type", {
       type: "socket",
     });
+
     socket.on("signUp", async (data) => {
       const { mobileNumber, password } = data;
       const existingUser = await collection.findOne({
         mobileNumber: mobileNumber,
       });
+
       const newUser = {
         mobileNumber: mobileNumber,
         password: password,
       };
+
       existingUser
         ? io.emit("userRegisteredAlready")
         : collection.insertMany([newUser]);
-      io.emit("userRegistered");
+
+      io.emit("userRegistered", {
+        mobileNumber: mobileNumber,
+      });
     });
 
     socket.on("login", async (data) => {
       const { mobileNumber, password } = data;
       number = mobileNumber;
       const newUser = await collection.findOne({ mobileNumber: mobileNumber });
+
       newUser
         ? newUser.password === password
-          ? io.emit("loginSuccess")
+          ? io.emit("loginSuccess", {
+              mobileNumber: mobileNumber,
+            })
           : io.emit("loginFailed")
         : io.emit("newUser");
     });
 
     socket.on("paymentPage", async (data) => {
       let socketId;
-      const { mobileNumber, NewTransactions } = data;
+      const { mobileNumber, newTransactions } = data;
       number = mobileNumber;
-      uid = NewTransactions.Uid;
-      const room = data.NewReceiver.tabId;
-      data.NewReceiver.socketRoom = socketId;
-      receivedPaymentAlerts.push(data.NewReceiver);
+      uid = newTransactions.uid;
+      const room = data.newReceiver.tabId;
+      data.newReceiver.socketRoom = socketId;
+      receivedPaymentAlerts.push(data.newReceiver);
       socketRooms.set(socket.id, room);
+
       for (const [key, value] of socketRooms.entries()) {
         if (value === room) {
           socketId = room;
@@ -392,23 +413,27 @@ if (process.env.CONNECTION_METHOD === "socket") {
         }
       }
       socket.join(room);
+
       try {
         const userFound = await collection.findOne({
           mobileNumber: mobileNumber,
         });
+
         if (userFound) {
           await collection.updateOne(
             { mobileNumber: mobileNumber },
-            { $push: { Transactions: NewTransactions } }
+            { $push: { transactions: newTransactions } }
           );
+
           io.to(mobileNumber).emit("newAlert", {
             newOne: true,
           });
+
           io.to(room).emit("getLastTransactions", {
-            Date: NewTransactions.Date,
-            Amount: NewTransactions.Amount,
-            Description: NewTransactions.Description,
-            Status: NewTransactions.Status,
+            date: newTransactions.date,
+            amount: newTransactions.amount,
+            description: newTransactions.description,
+            status: newTransactions.status,
           });
         }
       } catch (err) {
@@ -420,19 +445,21 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const socketID = data.socketRoom;
       socket.join(socketID);
     });
+
     socket.on("confirmed", async (data) => {
       const itemIndex = receivedPaymentAlerts.findIndex(
         (item) => item.tabId === data.tabId
       );
       itemIndex !== -1 ? receivedPaymentAlerts.splice(itemIndex, 1) : null;
+
       const user = await collection.findOne({ mobileNumber: number });
       if (user) {
-        const transactions = user.Transactions;
+        const transactions = user.transactions;
         const transaction = transactions.find(
-          (transaction) => transaction.Uid === uid
+          (transaction) => transaction.uid === uid
         );
-        if (transaction && data.clicked) {
-          transaction.Status = "completed";
+        if (data.clicked) {
+          transaction.status = "completed";
           await user.save();
           io.to(data.tabId).emit("success", true);
         }
@@ -448,12 +475,13 @@ if (process.env.CONNECTION_METHOD === "socket") {
       }
       const user = await collection.findOne({ mobileNumber: number });
       if (user) {
-        const transactions = user.Transactions;
+        const transactions = user.transactions;
         const transaction = transactions.find(
-          (transaction) => transaction.Uid === uid
+          (transaction) => transaction.uid === uid
         );
-        if (transaction && data.cancel) {
-          transaction.Status = "canceled";
+
+        if (data.cancel) {
+          transaction.status = "canceled";
           await user.save();
           io.to(data.tabId).emit("failed", true);
         }
@@ -528,14 +556,14 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("getTransactionDetails", async (data) => {
       const { mobileNumber } = data;
       const regUser = await collection.findOne({ mobileNumber: mobileNumber });
-      if (regUser && regUser.Transactions.length > 0) {
-        regUser.Transactions.forEach((transaction) => {
+      if (regUser && regUser.transactions.length > 0) {
+        regUser.transactions.forEach((transaction) => {
           io.emit("transactionDetailsFromDb", {
-            count: regUser.Transactions.length,
-            Date: transaction.Date,
-            Name: transaction.Name,
-            Amount: transaction.Amount,
-            Status: transaction.Status,
+            count: regUser.transactions.length,
+            date: transaction.date,
+            name: transaction.name,
+            amount: transaction.amount,
+            status: transaction.status,
           });
         });
       }
@@ -592,6 +620,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
     socket.on("alertPageLogin", async (data) => {
       const { mobileNumber, password } = data;
       const findUser = await collection.findOne({ mobileNumber: mobileNumber });
+
       if (findUser) {
         if (findUser.password === password) {
           socket.join(mobileNumber);
@@ -622,9 +651,12 @@ if (process.env.CONNECTION_METHOD === "socket") {
   });
 
   app.get("/homePage", (req, res) => {
-    const loggedNumber = req.query.mobileNumber;
+    let loggedNumber = req.query.mobileNumber;
+    loggedNumber = loggedNumber.replace(/\s/g, "");
+    const mobileNumber = `+${loggedNumber}`;
+
     const currentUserAlerts = receivedPaymentAlerts.filter(
-      (alert) => alert.mobileNumber === loggedNumber
+      (alert) => alert.mobileNumber === mobileNumber
     );
     res.render("base", {
       title: "payment alert",
