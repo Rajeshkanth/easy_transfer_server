@@ -4,7 +4,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const path = require("path");
+
 app.set("view engine", "ejs");
 app.use(
   cors({
@@ -12,7 +12,6 @@ app.use(
   })
 );
 app.use(express.static(__dirname + "/views"));
-app.use(express.static(path.join(__dirname, "public")));
 
 const receivedPaymentAlerts = [];
 const confirmationstatus = {};
@@ -493,6 +492,7 @@ if (process.env.CONNECTION_METHOD === "socket") {
       const numberFound = await collection.findOne({
         mobileNumber: mobileNumber,
       });
+
       numberFound
         ? io.emit("userNameAvailable", {
             user: numberFound.userName,
