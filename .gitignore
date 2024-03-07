@@ -1,5 +1,7 @@
 # Ignore node_modules directory
 /node_modules
+/.pnp
+.pnp.js
 
 # Ignore environment-specific files
 .env
