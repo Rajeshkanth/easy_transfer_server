@@ -5,10 +5,9 @@
   "main": "index.js",
   "scripts": {
     "server": "npm-run-all --parallel watch server",
-    "start": "nodemon index.js   postcss public/styles/tailwind.css -o public/styles/style.css --watch",
-    "start:socket": "CONNECTION_METHOD=socket nodemon index.js",
-    "watch": "nodemon --ext *",
-    "tailwind:css": "postcss public/styles/tailwind.css -o public/styles/style.css --watch"
+    "start": "nodemon polling_config.js ",
+    "start:socket": "CONNECTION_METHOD=socket nodemon socket_config.js",
+    "watch": "nodemon --ext *"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +19,7 @@
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
     "http": "^0.0.1-security",
     "mongoose": "^8.0.4",
     "mongosh": "^2.1.1",
@@ -35,9 +35,8 @@
     "browser-sync": "^3.0.2",
     "connect-livereload": "^0.6.1",
     "livereload": "^0.9.3",
-    "nodemon": "^3.0.2",
+    "nodemon": "^3.1.0",
     "npm-run-all": "^4.1.5",
     "tailwindcss": "^3.4.1"
-  
   }
 }

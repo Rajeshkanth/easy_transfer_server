@@ -61,7 +61,7 @@ const mobileNumber = "<%= mobileNumber %>";
   }
   setInterval(() => {
     axios
-      .post("/checkForNewAlert")
+      .post("/api/transaction/checkForNewAlert")
       .then((res) => {
         if (res.status === 200) {
           window.location.reload();
@@ -73,20 +73,22 @@ const mobileNumber = "<%= mobileNumber %>";
   }, 1000);
 
   const sendAction = async (action, index, tabId) => {
+   const formattedMobileNumber=`+${mobileNumber}`;
     try {
       const response = await axios.post(
-        `http://localhost:8080/confirm/${tabId}`,
+        `http://localhost:8080/api/transaction/confirm/${tabId}`,
         {
-          Action: action,
+          action: action,
           index: index,
           tabId: tabId,
+          mobileNumber:formattedMobileNumber,
         }
       );
 
       if (response.status === 200) {
-        window.location.href = "/paid?mobileNumber=" + mobileNumber;
+        window.location.href = "/paid?mobileNumber=" + formattedMobileNumber;
       } else if (response.status === 201) {
-        window.location.href = "/canceled?mobileNumber=" + mobileNumber;
+        window.location.href = "/canceled?mobileNumber=" + formattedMobileNumber;
       }
     } catch (err) {
       return err;
@@ -110,20 +112,24 @@ const mobileNumber = "<%= mobileNumber %>";
     }
   });
   const confirmViaSocket = (index, tabId, socketRoom) => {
+    const formattedMobileNumber=`+${mobileNumber}`;
     socket.emit("confirmed", {
       clicked: true,
       tabId: tabId,
-      SocketRoom: socketRoom,
+      socketRoom: socketRoom,
+      mobileNumber:formattedMobileNumber,
     });
-    window.location.href = "/paid?mobileNumber=" + mobileNumber;
+    window.location.href = "/paid?mobileNumber=" + formattedMobileNumber;
   };
   const cancelViaSocket = (index, tabId, socketRoom) => {
+    const formattedMobileNumber=`+${mobileNumber}`;
     socket.emit("canceled", {
       cancel: true,
       tabId: tabId,
-      SocketRoom: socketRoom,
+      socketRoom: socketRoom,
+      mobileNumber:formattedMobileNumber,
     });
-    window.location.href = "/canceled?mobileNumber=" + mobileNumber;
+    window.location.href = "/canceled?mobileNumber=" + formattedMobileNumber;
   };
 </script>
 

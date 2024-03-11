@@ -94,7 +94,7 @@
           password: passwordInput.value,
         });
 
-        socket.on("loginSuccess", () => {
+        socket.on("alertPageLoginSuccess", () => {
           window.location.href = `/homePage?mobileNumber=${mobileNumberInput.value}`;
           clearErrorMessages();
         });
@@ -103,14 +103,14 @@
           displayErrorMessage(passwordError, "Wrong password");
         });
 
-        socket.on("newUser", () => {
+        socket.on("alertPageNewUser", () => {
           displayErrorMessage(mobileNumberError, "Wrong mobile number");
         });
       };
 
       const handlePollingLogin = () => {
         axios
-          .post("/alertPageLogin", {
+          .post("/api/auth/login", {
             mobileNumber: mobileNumberInput.value,
             password: passwordInput.value,
           })
@@ -123,10 +123,10 @@
                 passwordInput.value = "";
                 break;
               case 201:
-                displayErrorMessage(passwordError, "Wrong password");
+                displayErrorMessage(mobileNumberError, "Wrong mobile number");
                 break;
               case 202:
-                displayErrorMessage(mobileNumberError, "Wrong mobile number");
+                displayErrorMessage(passwordError, "Wrong password");
                 break;
             }
           })
@@ -150,13 +150,8 @@
         const password = passwordInput.value;
         const isValidNumber = iti.isValidNumber(mobileNumber);
 
-        if (mobileNumber && password && isValidNumber) {
-          const connectionType = "<%= connectionType %>";
-          connectionType === "socket"
-            ? handleSocketLogin()
-            : handlePollingLogin();
-        } else {
-          displayErrorMessage(
+        if (!mobileNumber && !password && !isValidNumber) {
+          return displayErrorMessage(
             mobileNumber && !isValidNumber ? mobileNumberError : passwordError,
             mobileNumber ? "Invalid number" : "Enter mobile number"
           );
@@ -165,6 +160,11 @@
             !password ? "Enter password" : ""
           );
         }
+
+        const connectionType = "<%= connectionType %>";
+        connectionType === "socket"
+          ? handleSocketLogin()
+          : handlePollingLogin();
       };
 
       form.addEventListener("submit", login);
